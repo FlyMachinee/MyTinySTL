@@ -20,9 +20,10 @@ int main()
 		using T1 = add_lvalue_reference<void>::type;
 		using T2 = add_lvalue_reference<int>::type;
 		__try_add_pointer<const void>::pointer_type;
-
-
-
+		is_same<int, int>::value;
+		enable_if<true, int>::type;
+		conditional<true, int, float>::type;
+		
 	}
 	
 }

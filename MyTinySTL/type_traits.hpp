@@ -21,7 +21,7 @@ namespace __MY_NAMESPACE {
 	template <typename T, T Value>
 	struct integral_constant {
 
-		/** @brief 存放常量的类型 */
+		/** @brief 存放常量的类型 */		
 		using value_type = T;
 
 		/** @brief 自身的类型 */
@@ -115,13 +115,18 @@ namespace __MY_NAMESPACE {
 
 	#pragma endregion
 
+	// conditionally removes a function overload or template specialization from overload resolution
+	// 条件性地从重载决议移除函数重载或模板特化
 	#pragma region enable_if
 	/**
 	 * @brief conditionally removes a function overload or template specialization from overload resolution
+	 * @brief 条件性地从重载决议移除函数重载或模板特化
 	 * @brief 根据传入的布尔常量, 决定其是否包含type成员. 结合不推导语句与SFINAE实现对模板形参中的某些类型进行约束
+	 * 
 	 * @tparam Boolean 标识该结构体是否包含成员type的布尔值 
 	 * @tparam T 成员type表示的类型
-	 *
+	 * 
+	 * @note
 	 * 常见用法: 
 	 *		template <class T, class = void> struct XXX {}; <== 一般情况下的模版
 	 *		template <class T> struct XXX<T, typename enable_if< CONDITION<T> >::type>> {}; <== 特殊情况下(满足CONDITION<T>为true)的模版
@@ -140,8 +145,9 @@ namespace __MY_NAMESPACE {
 	template <bool Boolean, typename T = void>
 	struct enable_if {};
 
-	template <typename T> // specialization for Boolean = true
+	template <typename T> 
 	struct enable_if<true, T> { using type = T; };
+	// specialization for Boolean = true
 
 	#pragma endregion
 
@@ -165,10 +171,6 @@ namespace __MY_NAMESPACE {
 	template <typename, typename>
 	struct is_same: false_type {};
 
-	/**
-	 * @brief checks if two types are the same
-	 * @brief 检查两个类型是否相同, 包含成员value表示其结果值 
-	*/
 	template <typename T>
 	struct is_same<T, T>: true_type {};
 
@@ -205,7 +207,15 @@ namespace __MY_NAMESPACE {
 	// chooses one type or another based on compile-time boolean
 	// 根据传入的布尔常量, 在两个传入的类型中进行选择
 	#pragma region conditional
-
+	/**
+	 * @brief chooses one type or another based on compile-time boolean
+	 * @brief 根据传入的布尔常量, 在两个传入的类型中进行选择
+	 * @brief 其成员别名 type 包含了类型选择的结果
+	 * 
+	 * @tparam Boolean 传入的布尔常量
+	 * @tparam TrueType 布尔常量为 true 时的类型
+	 * @tparam FalseType 布尔常量为 false 时的类型
+	*/
 	template <bool Boolean, typename TrueType, typename FalseType>
 	struct conditional { using type = TrueType; };
 
@@ -213,6 +223,15 @@ namespace __MY_NAMESPACE {
 	struct conditional<false, TrueType, FalseType> { using type = FalseType; };
 
 	#if __HAS_CPP14
+	/**
+	 * @brief chooses one type or another based on compile-time boolean
+	 * @brief 根据传入的布尔常量, 在两个传入的类型中进行选择
+	 * @brief 自身的类型即为类型选择的结果
+	 * 
+	 * @tparam Boolean 传入的布尔常量
+	 * @tparam TrueType 布尔常量为true时的类型
+	 * @tparam FalseType 布尔常量为false时的类型
+	*/
 	template <bool Boolean, typename TrueType, typename FalseType>
 	using conditional_t = typename conditional<Boolean, TrueType, FalseType>::type;
 	#endif // __HAS_CPP14
@@ -233,6 +252,13 @@ namespace __MY_NAMESPACE {
 	#pragma region type_identity (>=C++20)
 
 	#if __HAS_CPP20
+	/**
+	 * @brief returns the type argument unchanged
+	 * @brief 恒等类型变换, 常用于构造不推导语境
+	 * @brief 包含成员别名 type, 与输入的T相同
+	 * 
+	 * @tparam T 参与变换的类型
+	*/
 	template <typename T>
 	struct type_identity { using type = T; };
 	#endif // __HAS_CPP20
@@ -249,8 +275,16 @@ namespace __MY_NAMESPACE {
 	// ====================================================
 
 	// removes const specifiers from the given type
+	// 从给定类型移除 const 限定符
 	#pragma region remove_const
 
+	/**
+	 * @brief removes const specifiers from the given type
+	 * @brief 从给定类型移除 const 限定符
+	 * @brief 包含成员别名 type, 表示移除的结果
+	 * 
+	 * @tparam T 需要移除 const 限定符的类型
+	*/
 	template <typename T>
 	struct remove_const { using type = T; };
 
@@ -258,6 +292,13 @@ namespace __MY_NAMESPACE {
 	struct remove_const<const T> { using type = T; };
 
 	#if __HAS_CPP14
+	/**
+	 * @brief removes const specifiers from the given type
+	 * @brief 从给定类型移除 const 限定符
+	 * @brief 该别名本身即表示移除的结果
+	 * 
+	 * @tparam T 需要移除 const 限定符的类型
+	*/
 	template <typename T>
 	using remove_const_t = typename remove_const<T>::type;
 	#endif // __HAS_CPP14
@@ -265,8 +306,16 @@ namespace __MY_NAMESPACE {
 	#pragma endregion
 
 	// removes voatile specifiers from the given type
+	// 从给定类型移除 volatile 限定符
 	#pragma region remove_volatile
 
+	/**
+	 * @brief removes volatile specifiers from the given type
+	 * @brief 从给定类型移除 volatile 限定符
+	 * @brief 包含成员别名 type, 表示移除的结果
+	 * 
+	 * @tparam T 需要移除 volatile 限定符的类型
+	*/
 	template <typename T>
 	struct remove_volatile { using type = T; };
 
@@ -274,6 +323,13 @@ namespace __MY_NAMESPACE {
 	struct remove_volatile<volatile T> { using type = T; };
 
 	#if __HAS_CPP14
+	/**
+	 * @brief removes volatile specifiers from the given type
+	 * @brief 从给定类型移除 volatile 限定符
+	 * @brief 该别名本身即表示移除的结果
+	 * 
+	 * @tparam T 需要移除 volatile 限定符的类型
+	*/
 	template <typename T>
 	using remove_volatile_t = typename remove_volatile<T>::type;
 	#endif // __HAS_CPP14
@@ -281,8 +337,16 @@ namespace __MY_NAMESPACE {
 	#pragma endregion
 
 	// removes const and volatile specifiers from the given type
+	// 从给定类型移除 const 和 volatile 限定符
 	#pragma region remove_cv
 
+	/**
+	 * @brief removes const and volatile specifiers from the given type
+	 * @brief 从给定类型移除 const 和 volatile 限定符
+	 * @brief 包含成员别名 type, 表示移除的结果
+	 * 
+	 * @tparam T 需要移除 const 和 volatile 限定符的类型
+	*/
 	template <typename T>
 	struct remove_cv { using type = T; };
 
@@ -296,6 +360,13 @@ namespace __MY_NAMESPACE {
 	struct remove_cv<const volatile T> { using type = T; };
 
 	#if __HAS_CPP14
+	/**
+	 * @brief removes const and volatile specifiers from the given type
+	 * @brief 从给定类型移除 const 和 volatile 限定符
+	 * @brief 该别名本身即表示移除的结果
+	 * 
+	 * @tparam T 需要移除 const 和 volatile 限定符的类型
+	*/
 	template <typename T>
 	using remove_cv_t = typename remove_cv<T>::type;
 	#endif // __HAS_CPP14
@@ -303,12 +374,27 @@ namespace __MY_NAMESPACE {
 	#pragma endregion
 
 	// add const specifiers from the given type
+	// 添加 const 限定符到给定类型
 	#pragma region add_const
 
+	/**
+	 * @brief add const specifiers from the given type
+	 * @brief 添加 const 限定符到给定类型
+	 * @brief 包含成员别名 type, 表示添加的结果
+	 * 
+	 * @tparam T 需要添加 const 限定符的类型
+	*/
 	template <typename T>
 	struct add_const { using type = const T; };
 
 	#if __HAS_CPP14
+	/**
+	 * @brief add const specifiers from the given type
+	 * @brief 添加 const 限定符到给定类型
+	 * @brief 该别名本身即表示添加的结果
+	 * 
+	 * @tparam T 需要添加 const 限定符的类型
+	*/
 	template <typename T>
 	using add_const_t = typename add_const<T>::type;
 	#endif // __HAS_CPP14
@@ -316,12 +402,26 @@ namespace __MY_NAMESPACE {
 	#pragma endregion	
 
 	// add volatile specifiers from the given type
+	// 添加 volatile 限定符到给定类型
 	#pragma region add_volatile
-
+	/**
+	 * @brief add volatile specifiers from the given type
+	 * @brief 添加 volatile 限定符到给定类型
+	 * @brief 包含成员别名 type, 表示添加的结果
+	 * 
+	 * @tparam T 需要添加 volatile 限定符的类型
+	*/
 	template <typename T>
 	struct add_volatile { using type = volatile T; };
 
 	#if __HAS_CPP14
+	/**
+	 * @brief add volatile specifiers from the given type
+	 * @brief 添加 volatile 限定符到给定类型
+	 * @brief 该别名本身即表示添加的结果
+	 * 
+	 * @tparam T 需要添加 volatile 限定符的类型
+	*/
 	template <typename T>
 	using add_volatile_t = typename add_volatile<T>::type;
 	#endif // __HAS_CPP14
@@ -329,12 +429,26 @@ namespace __MY_NAMESPACE {
 	#pragma endregion
 
 	// add const and volatile specifiers from the given type
+	// 添加 const 和 volatile 限定符到给定类型
 	#pragma region add_cv
-
+	/**
+	 * @brief add const and volatile specifiers from the given type
+	 * @brief 添加 const 和 volatile 限定符到给定类型
+	 * @brief 包含成员别名 type, 表示添加的结果
+	 * 
+	 * @tparam T 需要添加 const 和 volatile 限定符的类型
+	*/
 	template <typename T>
 	struct add_cv { using type = const volatile T; };
 
 	#if __HAS_CPP14
+	/**
+	 * @brief add const and volatile specifiers from the given type
+	 * @brief 添加 const 和 volatile 限定符到给定类型
+	 * @brief 该别名本身即表示添加的结果
+	 * 
+	 * @tparam T 需要添加 const 和 volatile 限定符的类型
+	*/
 	template <typename T>
 	using add_cv_t = typename add_cv<T>::type;
 	#endif // __HAS_CPP14
@@ -353,7 +467,13 @@ namespace __MY_NAMESPACE {
 	// removes a reference from the given type
 	// 移除类型中的引用
 	#pragma region remove_reference
-
+	/**
+	 * @brief removes a reference from the given type
+	 * @brief 移除类型中的引用
+	 * @brief 包含成员别名 type, 表示移除的结果
+	 * 
+	 * @tparam T 需要移除引用的类型
+	*/
 	template <typename T>
 	struct remove_reference { using type = T; };
 
@@ -375,6 +495,13 @@ namespace __MY_NAMESPACE {
 	//						如果没有这样"最特殊"的模板, 则编译失败
 
 	#if __HAS_CPP14
+	/**
+	 * @brief removes a reference from the given type
+	 * @brief 移除类型中的引用
+	 * @brief 该别名即表示移除的结果
+	 * 
+	 * @tparam T 需要移除引用的类型
+	*/
 	template <typename T>
 	using remove_reference_t = typename remove_reference<T>::type;
 	#endif // __HAS_CPP14
@@ -417,16 +544,44 @@ namespace __MY_NAMESPACE {
 	};
 	#endif // definition of __try_add_reference
 
+	/**
+	 * @brief adds an lvalue reference to the given type
+	 * @brief 为类型引入左值引用, 遵循引用折叠原则
+	 * @brief 包含成员别名 type, 表示添加的结果
+	 * 
+	 * @tparam T 需要添加左值引用的类型
+	*/
 	template <typename T>
 	struct add_lvalue_reference { using type = typename __try_add_reference<T>::lvalue_type; };
 
+	/**
+	 * @brief adds an rvalue reference to the given type
+	 * @brief 为类型引入右值引用, 遵循引用折叠原则
+	 * @brief 包含成员别名 type, 表示添加的结果
+	 * 
+	 * @tparam T 需要添加右值引用的类型
+	*/
 	template <typename T>
 	struct add_rvalue_reference { using type = typename __try_add_reference<T>::rvalue_type; };
 
 	#if __HAS_CPP14
+	/**
+	 * @brief adds an lvalue reference to the given type
+	 * @brief 为类型引入左值引用, 遵循引用折叠原则
+	 * @brief 该别名即表示添加的结果
+	 * 
+	 * @tparam T 需要添加左值引用的类型
+	*/
 	template <typename T>
 	using add_lvalue_reference_t = typename add_lvalue_reference<T>::type;
 
+	/**
+	 * @brief adds an rvalue reference to the given type
+	 * @brief 为类型引入右值引用, 遵循引用折叠原则
+	 * @brief 该别名即表示添加的结果
+	 * 
+	 * @tparam T 需要添加右值引用的类型
+	*/
 	template <typename T>
 	using add_rvalue_reference_t = typename add_rvalue_reference<T>::type;
 	#endif // __HAS_CPP14
@@ -443,9 +598,16 @@ namespace __MY_NAMESPACE {
 	// ====================================================
 
 	// removes a pointer from the given type
-	// 移除类型中的指针及其顶层cv限定符
+	// 移除给定类型的一层指针
 	#pragma region remove_pointer
 
+	/**
+	 * @brief removes a pointer from the given type
+	 * @brief 移除给定类型的一层指针
+	 * @brief 包含成员别名 type, 表示移除的结果
+	 * 
+	 * @tparam T 需要移除指针的类型
+	*/
 	template <typename T>
 	struct remove_pointer { using type = T; };
 	template <typename T>
@@ -458,6 +620,13 @@ namespace __MY_NAMESPACE {
 	struct remove_pointer<T* const volatile> { using type = T; };
 
 	#if __HAS_CPP14
+	/**
+	 * @brief removes a pointer from the given type
+	 * @brief 移除给定类型的一层指针
+	 * @brief 别名即表示移除的结果
+	 * 
+	 * @tparam T 需要移除指针的类型
+	*/
 	template <typename T>
 	using remove_pointer_t = typename remove_pointer<T>::type;
 	#endif // __HAS_CPP14
@@ -472,6 +641,14 @@ namespace __MY_NAMESPACE {
 	#if __HAS_CPP20
 	// handle non-reference-able type except void
 	// 处理不可引用的类型, 除了void
+
+	/**
+	 * @brief adds a pointer to the given type
+	 * @brief 对给定类型添加一层指针
+	 * @brief 包含成员别名 type, 表示添加的结果
+	 * 
+	 * @tparam T 需要添加指针的类型
+	*/
 	template <typename T>
 	struct add_pointer { using type = T; };
 
@@ -491,11 +668,25 @@ namespace __MY_NAMESPACE {
 		using pointer_type = typename remove_reference<T>::type*;
 	};
 
+	/**
+	 * @brief adds a pointer to the given type
+	 * @brief 对给定类型添加一层指针
+	 * @brief 包含成员别名 type, 表示添加的结果
+	 * 
+	 * @tparam T 需要添加指针的类型
+	*/
 	template <typename T>
 	struct add_pointer { using type = typename __try_add_pointer<T>::pointer_type; };
 	#endif // definition of add_pointer
 
 	#if __HAS_CPP14
+	/**
+	 * @brief adds a pointer to the given type
+	 * @brief 对给定类型添加一层指针
+	 * @brief 该别名即表示添加的结果
+	 * 
+	 * @tparam T 需要添加指针的类型
+	*/
 	template <typename T>
 	using add_pointer_t = typename add_pointer<T>::type;
 	#endif // __HAS_CPP14
@@ -515,10 +706,23 @@ namespace __MY_NAMESPACE {
 	// 检查类型是否为 void 及其cv衍生物
 	#pragma region is_void
 
+	/**
+	 * @brief checks if a type is void
+	 * @brief 检查类型是否为 void 及其cv衍生物
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
 	template <typename T>
 	struct is_void: is_same<void, typename remove_cv<T>::type> {};
 
 	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type is void
+	 * @brief 检查类型是否为 void 及其cv衍生物
+	 * @brief 该常量即为判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
 	template <typename T>
 	inline constexpr bool is_void_v = is_void<T>::value;
 	#endif // __HAS_CPP17
@@ -529,10 +733,23 @@ namespace __MY_NAMESPACE {
 	// 检查类型是否为 std::nullptr_t 及其cv衍生物
 	#pragma region is_null_pointer
 	#if __HAS_CPP14
+	/**
+	 * @brief checks if a type is void
+	 * @brief 检查类型是否为 std::nullptr_t 及其cv衍生物
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
 	template <typename T>
 	struct is_null_pointer: is_same<typename remove_cv<T>::type, ::std::nullptr_t> {};
 
 	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type is void
+	 * @brief 检查类型是否为 std::nullptr_t 及其cv衍生物
+	 * @brief 该常量即为判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
 	template <typename T>
 	inline constexpr bool is_null_pointer_v = is_null_pointer<T>::type;
 	#endif // __HAS_CPP17
