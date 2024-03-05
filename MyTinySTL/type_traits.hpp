@@ -151,59 +151,6 @@ namespace __MY_NAMESPACE {
 
 	#pragma endregion
 
-
-
-	// ====================================================
-	// 
-	//	type relationships and conditional selections
-	//  类型关系及条件选择
-	//
-	// ====================================================
-
-	// checks if two types are the same
-	// 检查两个类型是否相同, 其值即表示其结果
-	#pragma region is_same
-
-	/**
-	 * @brief checks if two types are the same
-	 * @brief 检查两个类型是否相同, 包含成员value表示其结果值 
-	*/
-	template <typename, typename>
-	struct is_same: false_type {};
-
-	template <typename T>
-	struct is_same<T, T>: true_type {};
-
-	#if __HAS_CPP17
-	/**
-	 * @brief checks if two types are the same
-	 * @brief 检查两个类型是否相同, 其值即表示其结果 
-	*/
-	template <typename T1, typename T2>
-	inline constexpr bool is_same_v = is_same<T1, T2>::value;
-	#endif // __HAS_CPP17
-
-	#pragma endregion
-
-	// (non-standard feature) checks if one type equals to any other types
-	// (非标准内容) 判断一个类型是否与后续类型之一相等
-	#pragma region is_any_of
-
-	#pragma endregion
-
-	// checks if a type is derived from the other type
-	// 检查一个类型是否派生自另一个类型
-	#pragma region is_base_of
-
-
-
-
-	#if __HAS_CPP17
-	
-	#endif // __HAS_CPP17
-
-	#pragma endregion
-
 	// chooses one type or another based on compile-time boolean
 	// 根据传入的布尔常量, 在两个传入的类型中进行选择
 	#pragma region conditional
@@ -235,6 +182,152 @@ namespace __MY_NAMESPACE {
 	template <bool Boolean, typename TrueType, typename FalseType>
 	using conditional_t = typename conditional<Boolean, TrueType, FalseType>::type;
 	#endif // __HAS_CPP14
+
+	#pragma endregion
+
+
+
+	// ============================================
+	//
+	//  compile-time boolean calculation (>=C++17)
+	//	编译期布尔运算 
+	// 
+	// ============================================
+
+	// variadic logical AND metafunction
+	// 变参的逻辑与元函数
+	#pragma region conjunction
+	#if __HAS_CPP17
+	/**
+	 * @brief variadic logical AND metafunction
+	 * @brief 变参的逻辑与元函数
+	 * @brief 包含成员 value, 表示合取结果
+	 * 
+	 * @tparam ... 参与逻辑与运算的, 含有可显示转换为 bool 的成员 type 的, 类 类型名
+	 * 
+	 * @detail
+	 * 特化 my::conjunction<B1, ..., BN> 有一个公开且无歧义的基类，即: 
+	 * 若 sizeof...(B) == 0, 则是 my::true_type
+	 * 否则, 若 B1, ..., Bn 中有 bool(Bi::value) == false, 则为首个 Bi
+	 * 否则若无这种类型, 则为 Bn.
+	 * 
+	 * 合取是短路的：若存在模板类型参数 Bi 满足 bool(Bi::value) == false, 
+	 * 则实例化 conjunction<B1, ..., Bn>::value 中不会进行对 j > i 的 Bj::value 的实例化
+	*/
+	template <typename...>
+	struct conjunction: true_type {};
+
+	template <typename B1>
+	struct conjunction<B1>: B1 {};
+
+	template <typename B1, typename... Bn>
+	struct conjunction<B1, Bn...>: conditional<bool(B1::value), conjunction<Bn...>, B1>::type {};
+	#endif // __HAS_CPP17
+	#pragma endregion
+
+	// variadic logical OR metafunction
+	// 变参的逻辑或元函数
+	#pragma region disjuction
+	#if __HAS_CPP17
+	/**
+	 * @brief variadic logical OR metafunction
+	 * @brief 变参的逻辑或元函数
+	 * @brief 包含成员 value, 表示析取结果
+	 * 
+	 * @tparam ... 参与逻辑或运算的, 含有可显示转换为 bool 的成员 type 的, 类 类型名
+	 * 
+	 * @detail
+	 * 特化 my::disjunction<B1, ..., BN> 有一个公开且无歧义的基类，即: 
+	 * 若 sizeof...(B) == 0, 则是 my::false_type
+	 * 否则, 若 B1, ..., Bn 中有 bool(Bi::value) == true, 则为首个 Bi
+	 * 否则若无这种类型, 则为 Bn.
+	 * 
+	 * 析取是短路的：若存在模板类型参数 Bi 满足 bool(Bi::value) == true, 
+	 * 则实例化 disjunction<B1, ..., Bn>::value 中不会进行对 j > i 的 Bj::value 的实例化
+	*/
+	template <typename...>
+	struct disjunction: false_type {};
+
+	template <typename B1>
+	struct disjunction<B1>: B1 {};
+
+	template <typename B1, typename... Bn>
+	struct disjunction<B1, Bn...>: conditional<bool(B1::value), B1, disjunction<Bn...>>::type {};
+	#endif // __HAS_CPP17
+	#pragma endregion
+
+	// logical NOT metafunction
+	// 逻辑非元函数
+	#pragma region negation
+	#if __HAS_CPP17
+	/**
+	 * @brief logical NOT metafunction
+	 * @brief 逻辑非元函数
+	 * @brief 包含成员 value, 表示取反结果
+	 * 
+	 * @tparam B 参与逻辑非运算的, 含有可显示转换为 bool 的成员 type 的, 类 类型名
+	*/
+	template <typename B>
+	struct negation: bool_constant<!bool(B::value)> {};
+	#endif // __HAS_CPP17
+	#pragma endregion
+
+	
+	// ===============================================
+	//  
+	//	type relationships
+	//  类型关系
+	//
+	// ===============================================
+
+	// checks if two types are the same
+	// 检查两个类型是否相同, 其值即表示其结果
+	#pragma region is_same
+
+	/**
+	 * @brief checks if two types are the same
+	 * @brief 检查两个类型是否相同, 包含成员value表示其结果值 
+	*/
+	template <typename, typename>
+	struct is_same: false_type {};
+
+	template <typename T>
+	struct is_same<T, T>: true_type {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if two types are the same
+	 * @brief 检查两个类型是否相同, 其值即表示其结果 
+	*/
+	template <typename T1, typename T2>
+	inline constexpr bool is_same_v = is_same<T1, T2>::value;
+	#endif // __HAS_CPP17
+
+	#pragma endregion
+
+	// (non-standard feature) checks if one type equals to any other types
+	// (非标准内容) 判断一个类型是否与后续类型之一相等
+	#pragma region is_any_of
+	#if __HAS_CPP17
+	#else
+	template <typename T1, typename T2, typename... Args>
+	struct is_any_of: integral_constant<bool, is_same<T1, T2>::value || is_any_of<T1, Args...>::value> {};
+
+	template <typename T1, typename T2>
+	struct is_any_of<T1, T2>: is_same<T1, T2> {};
+	#endif
+	#pragma endregion
+
+	// checks if a type is derived from the other type
+	// 检查一个类型是否派生自另一个类型
+	#pragma region is_base_of
+
+
+
+
+	#if __HAS_CPP17
+	
+	#endif // __HAS_CPP17
 
 	#pragma endregion
 
@@ -654,7 +747,7 @@ namespace __MY_NAMESPACE {
 
 	// handle reference-able type and void
 	// 处理可引用的类型, 以及void
-	template <typename T> requires requires { typename type_identity<typename remove_reference<T>::type*>>; }
+	template <typename T> requires requires { typename type_identity<typename remove_reference<T>::type*>; }
 	struct add_pointer<T> { using pointer_type = typename remove_reference<T>::type*; };
 
 	#else // __HAS_CPP <= 17
