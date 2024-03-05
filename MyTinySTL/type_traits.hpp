@@ -80,7 +80,6 @@ namespace __MY_NAMESPACE {
 	// void variadic alias template
 	// 将任意类型集合 映射至 void, 结合不推导语句与SFINAE 实现对模板形参中的某些类型进行约束
 	#pragma region void_t (>=C++17)
-
 	#if __HAS_CPP17
 	/**
 	 * @brief void variadic alias template
@@ -112,8 +111,7 @@ namespace __MY_NAMESPACE {
 	template<typename... Ts>
 	using __void_t = typename __make_void<Ts...>::type;	
 	#endif // __HAS_CPP17
-
-	#pragma endregion
+	#pragma endregion void_t
 
 	// conditionally removes a function overload or template specialization from overload resolution
 	// 条件性地从重载决议移除函数重载或模板特化
@@ -148,8 +146,7 @@ namespace __MY_NAMESPACE {
 	template <typename T> 
 	struct enable_if<true, T> { using type = T; };
 	// specialization for Boolean = true
-
-	#pragma endregion
+	#pragma endregion enable_if
 
 	// chooses one type or another based on compile-time boolean
 	// 根据传入的布尔常量, 在两个传入的类型中进行选择
@@ -182,8 +179,7 @@ namespace __MY_NAMESPACE {
 	template <bool Boolean, typename TrueType, typename FalseType>
 	using conditional_t = typename conditional<Boolean, TrueType, FalseType>::type;
 	#endif // __HAS_CPP14
-
-	#pragma endregion
+	#pragma endregion conditional
 
 
 
@@ -233,7 +229,7 @@ namespace __MY_NAMESPACE {
 	template <typename... B>
 	inline constexpr bool conjunction_v = conjunction<B...>::value;
 	#endif // __HAS_CPP17
-	#pragma endregion
+	#pragma endregion conjunction
 
 	// variadic logical OR metafunction
 	// 变参的逻辑或元函数
@@ -274,7 +270,7 @@ namespace __MY_NAMESPACE {
 	template <typename... B>
 	inline constexpr bool disjunction_v = disjunction<B...>::value;
 	#endif // __HAS_CPP17
-	#pragma endregion
+	#pragma endregion disjunction
 
 	// logical NOT metafunction
 	// 逻辑非元函数
@@ -299,9 +295,8 @@ namespace __MY_NAMESPACE {
 	*/
 	template <typename B>
 	inline constexpr bool negation_v = negation<B>::value;
-
 	#endif // __HAS_CPP17
-	#pragma endregion
+	#pragma endregion negation
 
 	
 	// ===============================================
@@ -314,7 +309,6 @@ namespace __MY_NAMESPACE {
 	// checks if two types are the same
 	// 检查两个类型是否相同, 其值即表示其结果
 	#pragma region is_same
-
 	/**
 	 * @brief checks if two types are the same
 	 * @brief 检查两个类型是否相同, 包含成员value表示其结果值 
@@ -333,8 +327,7 @@ namespace __MY_NAMESPACE {
 	template <typename T1, typename T2>
 	inline constexpr bool is_same_v = is_same<T1, T2>::value;
 	#endif // __HAS_CPP17
-
-	#pragma endregion
+	#pragma endregion is_same
 
 	// (non-standard feature) checks if one type equals to any other types
 	// (非标准内容) 判断一个类型是否与后续类型之一相等
@@ -380,7 +373,7 @@ namespace __MY_NAMESPACE {
 	template <typename T1, typename T2, typename... Ts>
 	struct is_any_of<T1, T2, Ts...>: integral_constant<bool, is_same<T1, T2>::value || is_any_of<T1, Ts...>::value> {};
 	#endif // __HAS_CPP17
-	#pragma endregion
+	#pragma endregion is_any_of
 
 	// checks if a type is derived from the other type
 	// 检查一个类型是否派生自另一个类型
@@ -407,7 +400,6 @@ namespace __MY_NAMESPACE {
 	// returns the type argument unchanged
 	// 恒等类型变换, 常用于构造不推导语境
 	#pragma region type_identity (>=C++20)
-
 	#if __HAS_CPP20
 	/**
 	 * @brief returns the type argument unchanged
@@ -419,8 +411,7 @@ namespace __MY_NAMESPACE {
 	template <typename T>
 	struct type_identity { using type = T; };
 	#endif // __HAS_CPP20
-
-	#pragma endregion
+	#pragma endregion type_identity
 
 
 
@@ -434,7 +425,6 @@ namespace __MY_NAMESPACE {
 	// removes const specifiers from the given type
 	// 从给定类型移除 const 限定符
 	#pragma region remove_const
-
 	/**
 	 * @brief removes const specifiers from the given type
 	 * @brief 从给定类型移除 const 限定符
@@ -459,13 +449,11 @@ namespace __MY_NAMESPACE {
 	template <typename T>
 	using remove_const_t = typename remove_const<T>::type;
 	#endif // __HAS_CPP14
-
-	#pragma endregion
+	#pragma endregion remove_const
 
 	// removes voatile specifiers from the given type
 	// 从给定类型移除 volatile 限定符
 	#pragma region remove_volatile
-
 	/**
 	 * @brief removes volatile specifiers from the given type
 	 * @brief 从给定类型移除 volatile 限定符
@@ -490,13 +478,11 @@ namespace __MY_NAMESPACE {
 	template <typename T>
 	using remove_volatile_t = typename remove_volatile<T>::type;
 	#endif // __HAS_CPP14
-
-	#pragma endregion
+	#pragma endregion remove_volatile
 
 	// removes const and volatile specifiers from the given type
 	// 从给定类型移除 const 和 volatile 限定符
 	#pragma region remove_cv
-
 	/**
 	 * @brief removes const and volatile specifiers from the given type
 	 * @brief 从给定类型移除 const 和 volatile 限定符
@@ -527,13 +513,11 @@ namespace __MY_NAMESPACE {
 	template <typename T>
 	using remove_cv_t = typename remove_cv<T>::type;
 	#endif // __HAS_CPP14
-
-	#pragma endregion
+	#pragma endregion remove_cv
 
 	// add const specifiers from the given type
 	// 添加 const 限定符到给定类型
 	#pragma region add_const
-
 	/**
 	 * @brief add const specifiers from the given type
 	 * @brief 添加 const 限定符到给定类型
@@ -555,8 +539,7 @@ namespace __MY_NAMESPACE {
 	template <typename T>
 	using add_const_t = typename add_const<T>::type;
 	#endif // __HAS_CPP14
-
-	#pragma endregion	
+	#pragma endregion add_const	
 
 	// add volatile specifiers from the given type
 	// 添加 volatile 限定符到给定类型
@@ -582,8 +565,7 @@ namespace __MY_NAMESPACE {
 	template <typename T>
 	using add_volatile_t = typename add_volatile<T>::type;
 	#endif // __HAS_CPP14
-
-	#pragma endregion
+	#pragma endregion add_volatile
 
 	// add const and volatile specifiers from the given type
 	// 添加 const 和 volatile 限定符到给定类型
@@ -609,8 +591,7 @@ namespace __MY_NAMESPACE {
 	template <typename T>
 	using add_cv_t = typename add_cv<T>::type;
 	#endif // __HAS_CPP14
-
-	#pragma endregion
+	#pragma endregion add_cv
 
 
 
@@ -687,7 +668,7 @@ namespace __MY_NAMESPACE {
 		using rvalue_type = T&&;
 	};
 
-	#else // __HAS_CPP <= 17
+	#else // ^^^ __HAS_CPP20 / vvv !__HAS_CPP20
 	template <typename T, typename = void>
 	struct __try_add_reference {
 		using lvalue_type = T;
@@ -757,7 +738,6 @@ namespace __MY_NAMESPACE {
 	// removes a pointer from the given type
 	// 移除给定类型的一层指针
 	#pragma region remove_pointer
-
 	/**
 	 * @brief removes a pointer from the given type
 	 * @brief 移除给定类型的一层指针
@@ -787,9 +767,7 @@ namespace __MY_NAMESPACE {
 	template <typename T>
 	using remove_pointer_t = typename remove_pointer<T>::type;
 	#endif // __HAS_CPP14
-
-
-	#pragma endregion
+	#pragma endregion remove_pointer
 
 	// adds a pointer to the given type
 	// 为类型引入指针, 对于不可引用的类型(除去void及其cv衍生物), 返回其本身
@@ -814,7 +792,7 @@ namespace __MY_NAMESPACE {
 	template <typename T> requires requires { typename type_identity<typename remove_reference<T>::type*>; }
 	struct add_pointer<T> { using pointer_type = typename remove_reference<T>::type*; };
 
-	#else // __HAS_CPP <= 17
+	#else // ^^^ __HAS_CPP20 / vvv !__HAS_CPP20
 	template <typename T, typename = void>
 	struct __try_add_pointer {
 		using pointer_type = T;
@@ -847,7 +825,6 @@ namespace __MY_NAMESPACE {
 	template <typename T>
 	using add_pointer_t = typename add_pointer<T>::type;
 	#endif // __HAS_CPP14
-
 	#pragma endregion add_pointer
 
 
@@ -862,10 +839,10 @@ namespace __MY_NAMESPACE {
 	// checks if a type is void
 	// 检查类型是否为 void 及其cv衍生物
 	#pragma region is_void
-
 	/**
 	 * @brief checks if a type is void
 	 * @brief 检查类型是否为 void 及其cv衍生物
+	 * @brief 包含成员 value, 表示其判断结果
 	 * 
 	 * @tparam T 需要进行判断的类型
 	*/
@@ -883,8 +860,7 @@ namespace __MY_NAMESPACE {
 	template <typename T>
 	inline constexpr bool is_void_v = is_void<T>::value;
 	#endif // __HAS_CPP17
-
-	#pragma endregion
+	#pragma endregion is_void
 
 	// checks if a type is std::nullptr_t
 	// 检查类型是否为 std::nullptr_t 及其cv衍生物
@@ -893,6 +869,7 @@ namespace __MY_NAMESPACE {
 	/**
 	 * @brief checks if a type is void
 	 * @brief 检查类型是否为 std::nullptr_t 及其cv衍生物
+	 * @brief 包含成员 value, 表示其判断结果
 	 * 
 	 * @tparam T 需要进行判断的类型
 	*/
@@ -911,24 +888,38 @@ namespace __MY_NAMESPACE {
 	inline constexpr bool is_null_pointer_v = is_null_pointer<T>::type;
 	#endif // __HAS_CPP17
 	#endif // __HAS_CPP14
-	#pragma endregion
+	#pragma endregion is_null_pointer
 
 	// checks if a type is an integral type
 	// 检查类型是否为整数类型
 	#pragma region is_integral
-
-	#if __HAS_CPP20
-
-	#else // __HAS_CPP <= 17
-
-	#endif // definition of is_integral
+	/**
+	 * @brief checks if a type is an integral type
+	 * @brief 检查类型是否为整数类型
+	 * @brief 包含成员 value, 表示其判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
+	template <typename T>
+	struct is_integral: is_any_of<typename remove_cv<T>::type, bool, char, unsigned char, signed char, 
+		#if __HAS_CPP20
+		char8_t,
+		#endif // __HAS_CPP20
+		char16_t, char32_t, wchar_t, short, unsigned short, int, unsigned int, long, unsigned long, long long, unsigned long long>
+	{};
 
 	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type is an integral type
+	 * @brief 检查类型是否为整数类型
+	 * @brief 其本身即表示判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
 	template <typename T>
 	inline constexpr bool is_integral_v = is_integral<T>::value;
 	#endif // __HAS_CPP17
-
-	#pragma endregion
+	#pragma endregion is_integral
 
 
 } // namespace __MY_NAMESPACE
