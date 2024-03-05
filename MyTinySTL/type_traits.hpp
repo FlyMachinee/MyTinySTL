@@ -203,7 +203,7 @@ namespace __MY_NAMESPACE {
 	 * @brief 变参的逻辑与元函数
 	 * @brief 包含成员 value, 表示合取结果
 	 * 
-	 * @tparam ... 参与逻辑与运算的, 含有可显示转换为 bool 的成员 type 的, 类 类型名
+	 * @tparam ...B 参与逻辑与运算的, 含有可显式转换为 bool 的成员 type 的, 类 类型名
 	 * 
 	 * @detail
 	 * 特化 my::conjunction<B1, ..., BN> 有一个公开且无歧义的基类，即: 
@@ -214,7 +214,7 @@ namespace __MY_NAMESPACE {
 	 * 合取是短路的：若存在模板类型参数 Bi 满足 bool(Bi::value) == false, 
 	 * 则实例化 conjunction<B1, ..., Bn>::value 中不会进行对 j > i 的 Bj::value 的实例化
 	*/
-	template <typename...>
+	template <typename... B>
 	struct conjunction: true_type {};
 
 	template <typename B1>
@@ -222,6 +222,16 @@ namespace __MY_NAMESPACE {
 
 	template <typename B1, typename... Bn>
 	struct conjunction<B1, Bn...>: conditional<bool(B1::value), conjunction<Bn...>, B1>::type {};
+
+	/**
+	 * @brief variadic logical AND metafunction
+	 * @brief 变参的逻辑与元函数
+	 * @brief 其值即表示合取结果
+	 * 
+	 * @tparam ... 参与逻辑与运算的, 含有可显式转换为 bool 的成员 type 的, 类 类型名
+	*/
+	template <typename... B>
+	inline constexpr bool conjunction_v = conjunction<B...>::value;
 	#endif // __HAS_CPP17
 	#pragma endregion
 
@@ -234,7 +244,7 @@ namespace __MY_NAMESPACE {
 	 * @brief 变参的逻辑或元函数
 	 * @brief 包含成员 value, 表示析取结果
 	 * 
-	 * @tparam ... 参与逻辑或运算的, 含有可显示转换为 bool 的成员 type 的, 类 类型名
+	 * @tparam ...B 参与逻辑或运算的, 含有可显式转换为 bool 的成员 type 的, 类 类型名
 	 * 
 	 * @detail
 	 * 特化 my::disjunction<B1, ..., BN> 有一个公开且无歧义的基类，即: 
@@ -245,7 +255,7 @@ namespace __MY_NAMESPACE {
 	 * 析取是短路的：若存在模板类型参数 Bi 满足 bool(Bi::value) == true, 
 	 * 则实例化 disjunction<B1, ..., Bn>::value 中不会进行对 j > i 的 Bj::value 的实例化
 	*/
-	template <typename...>
+	template <typename... B>
 	struct disjunction: false_type {};
 
 	template <typename B1>
@@ -253,6 +263,16 @@ namespace __MY_NAMESPACE {
 
 	template <typename B1, typename... Bn>
 	struct disjunction<B1, Bn...>: conditional<bool(B1::value), B1, disjunction<Bn...>>::type {};
+
+	/**
+	 * @brief variadic logical OR metafunction
+	 * @brief 变参的逻辑或元函数
+	 * @brief 其值即表示析取结果
+	 * 
+	 * @tparam ... 参与逻辑或运算的, 含有可显式转换为 bool 的成员 type 的, 类 类型名
+	*/
+	template <typename... B>
+	inline constexpr bool disjunction_v = disjunction<B...>::value;
 	#endif // __HAS_CPP17
 	#pragma endregion
 
@@ -265,10 +285,21 @@ namespace __MY_NAMESPACE {
 	 * @brief 逻辑非元函数
 	 * @brief 包含成员 value, 表示取反结果
 	 * 
-	 * @tparam B 参与逻辑非运算的, 含有可显示转换为 bool 的成员 type 的, 类 类型名
+	 * @tparam B 参与逻辑非运算的, 含有可显式转换为 bool 的成员 type 的, 类 类型名
 	*/
 	template <typename B>
 	struct negation: bool_constant<!bool(B::value)> {};
+
+	/**
+	 * @brief logical NOT metafunction
+	 * @brief 逻辑非元函数
+	 * @brief 其值即表示取反结果
+	 * 
+	 * @tparam B 参与逻辑非运算的, 含有可显式转换为 bool 的成员 type 的, 类 类型名
+	*/
+	template <typename B>
+	inline constexpr bool negation_v = negation<B>::value;
+
 	#endif // __HAS_CPP17
 	#pragma endregion
 
@@ -309,13 +340,46 @@ namespace __MY_NAMESPACE {
 	// (非标准内容) 判断一个类型是否与后续类型之一相等
 	#pragma region is_any_of
 	#if __HAS_CPP17
-	#else
-	template <typename T1, typename T2, typename... Args>
-	struct is_any_of: integral_constant<bool, is_same<T1, T2>::value || is_any_of<T1, Args...>::value> {};
+	/**
+	 * @brief (non-standard feature) checks if one type equals to any other types
+	 * @brief (非标准内容) 判断一个类型是否包含于后续类型之中
+	 * @brief 包含成员 value, 表示判断结果
+	 * 
+	 * @tparam T 一个类型
+	 * @tparam ...Ts 被判断是否包含T的类型集合
+	*/
+	template <typename T, typename... Ts>
+	struct is_any_of: bool_constant<(is_same_v<T, Ts> || ...)> {};
+
+	/**
+	 * @brief (non-standard feature) checks if one type equals to any other types
+	 * @brief (非标准内容) 判断一个类型是否包含于后续类型之中
+	 * @brief 其自身即表示判断结果
+	 * 
+	 * @tparam T 一个类型
+	 * @tparam ...Ts 被判断是否包含T的类型集合
+	*/
+	template <typename T, typename... Ts>
+	inline constexpr bool is_any_of_v = is_any_of_v<T, Ts...>;
+
+	#else // ^^^__HAS_CPP17 / vvv !__HAS_CPP17
+	/**
+	 * @brief (non-standard feature) checks if one type equals to any other types
+	 * @brief (非标准内容) 判断一个类型是否包含于后续类型之中
+	 * @brief 包含成员 value, 表示判断结果
+	 * 
+	 * @tparam T 一个类型
+	 * @tparam ...Ts 被判断是否包含T的类型集合
+	*/
+	template <typename T, typename...>
+	struct is_any_of: integral_constant<bool, false> {};
 
 	template <typename T1, typename T2>
 	struct is_any_of<T1, T2>: is_same<T1, T2> {};
-	#endif
+
+	template <typename T1, typename T2, typename... Ts>
+	struct is_any_of<T1, T2, Ts...>: integral_constant<bool, is_same<T1, T2>::value || is_any_of<T1, Ts...>::value> {};
+	#endif // __HAS_CPP17
 	#pragma endregion
 
 	// checks if a type is derived from the other type
