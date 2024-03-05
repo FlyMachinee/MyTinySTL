@@ -947,5 +947,40 @@ namespace __MY_NAMESPACE {
 	#endif // __HAS_CPP17
 	#pragma endregion
 
+	// checks if a type is an array type
+	// 检查类型是否是数组类型
+	#pragma region is_array
+	/**
+	 * @brief checks if a type is a array type
+	 * @brief 检查类型是否是数组类型
+	 * @brief 包含成员 value, 表示其判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
+	template <typename T>
+	struct is_array: false_type {};
+
+	template <typename T>
+	struct is_array<T[]>: true_type {};
+
+	template <typename T, ::std::size_t N>
+	struct is_array<T[N]>: true_type {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type is a array type
+	 * @brief 检查类型是否是数组类型
+	 * @brief 其本身即表示判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_array_v = is_array<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion
+
+
+
+
 } // namespace __MY_NAMESPACE
 #endif // __HAS_CPP11
