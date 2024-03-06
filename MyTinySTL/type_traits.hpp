@@ -138,6 +138,15 @@ namespace __MY_NAMESPACE {
 	 *		此时typename enable_if< CONDITION<T> >::type>这句话是无法编译的, 出现了替换失败(Substitution failure)
 	 *		根据SFINAF, 这不是错误, 此时会转向去寻找其他的备选方案, 从而特化了struct XXX的主模版, 即特殊情况
 	 * 
+	 * 另一常见用法:
+	 *		template <typename...>
+	 *		enable_if< CONDITION<...>, RETURN_TYPE>::type foo(...) {};
+	 * 
+	 *		template <typename...>
+	 *		enable_if<! CONDITION<...>, RETURN_TYPE>::type foo(...) {};
+	 * 
+	 *		可根据模板参数是否满足 CONDITION 来调用不同的 foo 重载, 原理同上
+	 * 
 	 * 在C++20可使用concept进行更人性化的编程
 	*/
 	template <bool Boolean, typename T = void>
