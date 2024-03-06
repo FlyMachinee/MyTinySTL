@@ -811,7 +811,7 @@ namespace __MY_NAMESPACE {
 	// handle reference-able type and void
 	// 处理可引用的类型, 以及void
 	template <typename T> requires requires { typename type_identity<typename remove_reference<T>::type*>; }
-	struct add_pointer<T> { using pointer_type = typename remove_reference<T>::type*; };
+	struct add_pointer<T> { using type = typename remove_reference<T>::type*; };
 
 	#else // ^^^ __HAS_CPP20 / vvv !__HAS_CPP20
 	template <typename T, typename = void>
