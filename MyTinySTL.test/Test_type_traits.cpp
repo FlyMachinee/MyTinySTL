@@ -13,7 +13,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace Test_type_traits {
 	TEST_CLASS(Test_integral_constant) {
-public:
+	public:
 		TEST_METHOD(TestMethod) {
 			typedef my::integral_constant<int, 2> two_t;
 			typedef my::integral_constant<int, 4> four_t;
@@ -258,4 +258,166 @@ public:
 		}
 	};
 
+	#if __HAS_CPP17
+
+	TEST_CLASS(Test_conjunction) {
+	private:
+		// 若所有 Ts... 都拥有等同于 T 的类型，则启用 func
+		template<typename T, typename... Ts>
+		::my::enable_if_t<::my::conjunction_v<::my::is_same<T, Ts>...>, bool>
+			func(T, Ts...) {
+			return true;
+		}
+
+		// 否则
+		template<typename T, typename... Ts>
+		::my::enable_if_t<!::my::conjunction_v<::my::is_same<T, Ts>...>, bool>
+			func(T, Ts...) {
+			return false;
+		}
+
+	public:
+		TEST_METHOD(TestMethod) {
+			Assert::AreEqual(true, func(1, 2, 3));
+			Assert::AreEqual(false, func(1, 2, "Hello"));
+		}
+	};
+
+	TEST_CLASS(Test_disjunction) {
+	private:
+
+		// 傻逼MSVC在20标准中对value_equal抛出C2993错误
+		#if !__HAS_CPP20
+		// values_equal<a, b, T>::value 为 true 当且仅当 a == b 。
+		template <auto V1, decltype(V1) V2, typename T>
+		struct values_equal: std::bool_constant<V1 == V2> {
+			using type = T;
+		};
+
+		// default_type<T>::value 始终为 true
+		template <typename T>
+		struct default_type: std::true_type {
+			using type = T;
+		};
+
+		// 现在我们可以像 switch 语句一样使用 disjunction ：
+		template <int I>
+		using int_of_size = typename my::disjunction<  //
+			values_equal<I, 1, std::int8_t>,            //
+			values_equal<I, 2, std::int16_t>,           //
+			values_equal<I, 4, std::int32_t>,           //
+			values_equal<I, 8, std::int64_t>,           //
+			default_type<void>                          // 必须在最后！
+		>::type;
+
+		#endif
+
+		// 检查 Foo 是否可从 double 构造将导致硬错误
+		struct Foo {
+			template<class T>
+			struct sfinae_unfriendly_check { static_assert(!std::is_same_v<T, double>); };
+
+			template<class T>
+			Foo(T, sfinae_unfriendly_check<T> = {});
+		};
+
+		template<class... Ts>
+		struct first_constructible {
+			template<class T, class...Args>
+			struct is_constructible_x: std::is_constructible<T, Args...> {
+				using type = T;
+			};
+			struct fallback {
+				static constexpr bool value = true;
+				using type = void; // 若找不到则用于返回的类型
+			};
+
+			template<class... Args>
+			using with = typename my::disjunction<is_constructible_x<Ts, Args...>...,
+				fallback>::type;
+		};
+
+	public:
+		TEST_METHOD(TestMethod) {
+
+			
+			#if !__HAS_CPP20
+			static_assert(sizeof(int_of_size<1>) == 1);
+			static_assert(sizeof(int_of_size<2>) == 2);
+			static_assert(sizeof(int_of_size<4>) == 4);
+			static_assert(sizeof(int_of_size<8>) == 8);
+			static_assert(std::is_same_v<int_of_size<13>, void>);
+			#endif
+
+			// OK ，不实例化 is_constructible<Foo, double>
+			static_assert(std::is_same_v<first_constructible<std::string, int, Foo>::with<double>,
+										 int>);
+
+			static_assert(std::is_same_v<first_constructible<std::string, int>::with<>, std::string>);
+			static_assert(std::is_same_v<first_constructible<std::string, int>::with<const char*>,
+										 std::string>);
+			static_assert(std::is_same_v<first_constructible<std::string, int>::with<void*>, void>);
+		}
+	};
+
+	TEST_CLASS(Test_negation) {
+	public:
+		TEST_METHOD(TestMethod) {
+			static_assert(std::is_same<std::bool_constant<false>, typename std::negation<std::bool_constant<true>>::type>::value, "");
+			static_assert(std::is_same<std::bool_constant<true>, typename std::negation<std::bool_constant<false>>::type>::value, "");
+		}
+	};
+	
+	#endif
+
+	TEST_CLASS(Test_is_integral) {
+	private:
+		class A {};
+
+		enum E: int {};
+
+		template <class T>
+		T f(T i) {
+			static_assert(std::is_integral<T>::value, "Integral required.");
+			return i;
+		}
+
+	public:
+		TEST_METHOD(TestMethod) {
+			static_assert(false == my::is_integral<A>::value, "");
+			static_assert(false == my::is_integral<E>::value, "");
+			static_assert(false == my::is_integral<float>::value, "");
+			static_assert(true == my::is_integral<int>::value, "");
+			static_assert(true == my::is_integral<bool>::value, "");
+			Assert::AreEqual(123, f(123));
+		}
+	};
+
+	TEST_CLASS(Test_is_floating_point) {
+		class A {};
+	public:
+		TEST_METHOD(TestMethod) {
+			static_assert(false == my::is_floating_point<A>::value, "");
+			static_assert(true == my::is_floating_point<float>::value, "");
+			static_assert(false == my::is_floating_point<float&>::value, "");
+			static_assert(true == my::is_floating_point<double>::value, "");
+			static_assert(false == my::is_floating_point<double&>::value, "");
+			static_assert(false == my::is_floating_point<int>::value, "");
+		}
+	};
+
+	TEST_CLASS(Test_is_array) {
+		class A {};
+	public:
+		TEST_METHOD(TestMethod) {
+			static_assert(false == my::is_array<A>::value, "");
+			static_assert(true == my::is_array<A[]>::value, "");
+			static_assert(true == my::is_array<A[3]>::value, "");
+			static_assert(false == my::is_array<float>::value, "");
+			static_assert(false == my::is_array<int>::value, "");
+			static_assert(true == my::is_array<int[]>::value, "");
+			static_assert(true == my::is_array<int[3]>::value, "");
+			static_assert(false == my::is_array<std::array<int, 3>>::value, "");
+		}
+	};
 }
