@@ -146,6 +146,19 @@ namespace __MY_NAMESPACE {
 	template <typename T> 
 	struct enable_if<true, T> { using type = T; };
 	// specialization for Boolean = true
+
+	#if __HAS_CPP14
+	/**
+	 * @brief conditionally removes a function overload or template specialization from overload resolution
+	 * @brief 条件性地从重载决议移除函数重载或模板特化
+	 * @brief 根据传入的布尔常量, 决定该别名模板是否有效
+	 * 
+	 * @tparam Boolean 标识该别名模板是否有效的布尔值, true 则有效
+	 * @tparam T 当 Boolean 为 true 时, 该别名模板所代表的类型 
+	*/
+	template <bool Boolean, typename T = void>
+	using enable_if_t = typename enable_if<Boolean, T>::type;
+	#endif // __HAS_CPP14
 	#pragma endregion enable_if
 
 	// chooses one type or another based on compile-time boolean
@@ -646,7 +659,6 @@ namespace __MY_NAMESPACE {
 
 	#pragma endregion remove_reference
 
-
 	// adds an lvalue and rvalue reference to the given type
 	// 为类型引入左值引用及右值引用, 遵循引用折叠原则
 	#pragma region add_lvalue_reference add_rvalue_reference
@@ -945,7 +957,7 @@ namespace __MY_NAMESPACE {
 	template <typename T>
 	inline constexpr bool is_floating_point_v = is_floating_point<T>::value;
 	#endif // __HAS_CPP17
-	#pragma endregion
+	#pragma endregion is_floating_point
 
 	// checks if a type is an array type
 	// 检查类型是否是数组类型
@@ -977,7 +989,7 @@ namespace __MY_NAMESPACE {
 	template <typename T>
 	inline constexpr bool is_array_v = is_array<T>::value;
 	#endif // __HAS_CPP17
-	#pragma endregion
+	#pragma endregion is_array
 
 
 
