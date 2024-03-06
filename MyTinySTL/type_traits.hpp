@@ -850,6 +850,20 @@ namespace __MY_NAMESPACE {
 
 
 
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type is volatile-qualified
+	 * @brief 检查类型是否为 volatile 限定
+	 * @brief 该常量即为判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_volatile_v = is_volatile<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_volatile
+
+
 	// ====================================================
 	// 
 	//	Primary type categories and judges in compile-time
