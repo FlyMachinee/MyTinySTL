@@ -850,6 +850,56 @@ namespace __MY_NAMESPACE {
 
 
 
+	// ============================================
+	//
+	//  Type properties and judges in compile-time
+	//  类型的性质及其分类的编译期内判断
+	//
+	// ============================================
+
+	// checks if a type is const-qualified
+	// 检查类型是否为 const 限定
+	#pragma region is_const
+	/**
+	 * @brief checks if a type is const-qualified
+	 * @brief 检查类型是否为 const 限定
+	 * @brief 包含成员 value, 表示其判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
+	template <typename T>
+	struct is_const: false_type {};
+
+	template <typename T>
+	struct is_const<const T>: true_type {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type is const-qualified
+	 * @brief 检查类型是否为 const 限定
+	 * @brief 该常量即为判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_const_v = is_const<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_const
+
+	// checks if a type is volatile-qualified
+	// 检查类型是否为 volatile 限定
+	#pragma region is_volatile
+	/**
+	 * @brief checks if a type is volatile-qualified
+	 * @brief 检查类型是否为 volatile 限定
+	 * @brief 包含成员 value, 表示其判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
+	template <typename T>
+	struct is_volatile: false_type {};
+
+
 	#if __HAS_CPP17
 	/**
 	 * @brief checks if a type is volatile-qualified
