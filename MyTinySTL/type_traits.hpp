@@ -1094,6 +1094,36 @@ namespace __MY_NAMESPACE {
 	#endif // __HAS_CPP17
 	#pragma endregion is_union
 
+	// checks if a type is a non-union class type
+	// 检查类型是否为非联合类类型
+	#pragma region is_class
+	template <typename T, typename = void>
+	struct __is_class_or_union: false_type {};
+	template <typename T>
+	struct __is_class_or_union<T, __void_t<int T::*>>: true_type {};
+
+	/**
+	 * @brief checks if a type is a non-union class type
+	 * @brief 检查类型是否为非联合类类型
+	 * @brief 包含成员 value, 表示其判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
+	template <typename T>
+	struct is_class: integral_constant<bool, __is_class_or_union<T>::value && !is_union<T>::value> {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type is a non-union class type
+	 * @brief 检查类型是否为非联合类类型
+	 * @brief 其本身即表示判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_class_v = is_class<T>::value;
+	#endif
+	#pragma endregion is_class
 
 
 } // namespace __MY_NAMESPACE
