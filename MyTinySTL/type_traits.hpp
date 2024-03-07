@@ -901,6 +901,8 @@ namespace __MY_NAMESPACE {
 	template <typename T>
 	struct is_volatile: false_type {};
 
+	template <typename T>
+	struct is_volatile<volatile T>: true_type {};
 
 	#if __HAS_CPP17
 	/**
