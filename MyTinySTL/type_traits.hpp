@@ -1211,5 +1211,39 @@ namespace __MY_NAMESPACE {
 	inline constexpr bool is_rvalue_reference_v = is_rvalue_reference<T>::value;
 	#endif // __HAS_CPP17
 	#pragma endregion is_rvalue_reference
+
+	// checks if a type is a function type
+	// 检查是否为函数类型
+	#pragma region is_function
+	/**
+	 * @brief checks if a type is a function type
+	 * @brief 检查类型是否为函数类型
+	 * @brief 包含成员 value, 表示其判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	 * 
+	 * @note
+	 *		...函数类型和引用类型以外的任何（可能不完整的）类型都是包含以下...
+	 *		见 https://zh.cppreference.com/w/cpp/language/cv
+	*/
+	template <typename T>
+	struct is_function: integral_constant<bool,
+		!is_const<const T>::value &&
+		!is_lvalue_reference<T>::value &&
+		!is_rvalue_reference<T>::value
+	> {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type is a function type
+	 * @brief 检查类型是否为函数类型
+	 * @brief 其本身即表示判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_function_v = is_function<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_function
 } // namespace __MY_NAMESPACE
 #endif // __HAS_CPP11
