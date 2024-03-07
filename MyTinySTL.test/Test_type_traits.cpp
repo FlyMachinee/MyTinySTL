@@ -378,7 +378,7 @@ namespace Test_type_traits {
 
 		template <class T>
 		T f(T i) {
-			static_assert(std::is_integral<T>::value, "Integral required.");
+			static_assert(my::is_integral<T>::value, "Integral required.");
 			return i;
 		}
 
@@ -420,4 +420,194 @@ namespace Test_type_traits {
 			static_assert(false == my::is_array<std::array<int, 3>>::value, "");
 		}
 	};
+
+	TEST_CLASS(Test_is_union) {
+	private:
+		struct A {};
+
+		typedef union {
+			int a;
+			float b;
+		} B;
+
+		struct C { B d; };
+	public:
+		TEST_METHOD(TestMethod) {
+			static_assert(false == my::is_union<A>::value, "");
+			static_assert(true == my::is_union<B>::value, "");
+			static_assert(false == my::is_union<C>::value, "");
+			static_assert(false == my::is_union<int>::value, "");
+		}
+	};
+
+	TEST_CLASS(Test_is_class) {
+	private:
+		struct A {};
+
+		class B {};
+
+		enum class E {};
+
+		union U { class UC {}; };
+	public:
+		TEST_METHOD(TestMethod) {
+			static_assert(false == my::is_class<U>::value, "");
+			static_assert(true == my::is_class<U::UC>::value, "");
+			static_assert(true == my::is_class<A>::value, "");
+			static_assert(true == my::is_class<B>::value, "");
+			static_assert(false == my::is_class<B*>::value, "");
+			static_assert(false == my::is_class<B&>::value, "");
+			static_assert(true == my::is_class<const B>::value, "");
+			static_assert(false == my::is_class<E>::value, "");
+			static_assert(false == my::is_class<int>::value, "");
+			static_assert(true == my::is_class<struct S>::value, "");
+			static_assert(true == my::is_class<class C>::value, "");
+		}
+	};
+
+	TEST_CLASS(Test_is_pointer) {
+	private:
+		struct A {
+			int m;
+			void f() {}
+		};
+
+		int A::* mem_data_ptr = &A::m;     // a pointer to member data
+		void (A::* mem_fun_ptr)() = &A::f; // a pointer to member function
+
+	public:
+		TEST_METHOD(TestMethod) {
+			static_assert(
+				!my::is_pointer<A>::value &&
+				!my::is_pointer<A>() && // same as above, using inherited operator bool
+				!my::is_pointer<A>{} && // ditto
+				!my::is_pointer<A>()() && // same as above, using inherited operator()
+				!my::is_pointer<A>{}() &&  // ditto
+				my::is_pointer<A*>::value &&
+				my::is_pointer<A const* volatile>::value &&
+				!my::is_pointer<A&>::value &&
+				!my::is_pointer<decltype(mem_data_ptr)>::value &&
+				!my::is_pointer<decltype(mem_fun_ptr)>::value &&
+				my::is_pointer<void*>::value &&
+				!my::is_pointer<int>::value &&
+				my::is_pointer<int*>::value &&
+				my::is_pointer<int**>::value &&
+				!my::is_pointer<int[10]>::value &&
+				!my::is_pointer<std::nullptr_t>::value &&
+				my::is_pointer<void (*)()>::value
+			);
+		}
+	};
+
+	TEST_CLASS(Test_is_lvalue_reference) {
+	private:
+		class A {};
+
+	public:
+		TEST_METHOD(TestMethod) {
+			static_assert(false == my::is_lvalue_reference<A>::value, "");
+			static_assert(true == my::is_lvalue_reference<A&>::value, "");
+			static_assert(false == my::is_lvalue_reference<A&&>::value, "");
+			static_assert(false == my::is_lvalue_reference<int>::value, "");
+			static_assert(true == my::is_lvalue_reference<int&>::value, "");
+			static_assert(false == my::is_lvalue_reference<int&&>::value, "");
+		}
+	};
+
+	TEST_CLASS(Test_is_rvalue_reference) {
+	private:
+		class A {};
+
+		template <typename T>
+		int test(T&& x) {
+			static_assert(std::is_same_v<T&&, decltype(x)>);
+
+			int acc = 0;
+			acc += 100 * my::is_rvalue_reference<T>::value;
+			acc += 10 * my::is_rvalue_reference<T&&>::value;
+			acc += 1 * my::is_rvalue_reference<decltype(x)>::value;
+			return acc;
+		}
+
+	public:
+		TEST_METHOD(TestMethod) {
+			static_assert(
+				my::is_rvalue_reference<A>::value == false &&
+				my::is_rvalue_reference<A&>::value == false &&
+				my::is_rvalue_reference<A&&>::value != false &&
+				my::is_rvalue_reference<char>::value == false &&
+				my::is_rvalue_reference<char&>::value == false &&
+				my::is_rvalue_reference<char&&>::value != false
+			);
+
+			Assert::AreEqual(11, test(42));
+
+			int x = 42;
+			Assert::AreEqual(0, test(x));
+		}
+	};
+
+	TEST_CLASS(Test_is_function) {
+	private:
+		struct A { int fun() const&; };
+
+		template<typename>
+		struct PM_traits {};
+
+		template<class T, class U>
+		struct PM_traits<U T::*> { using member_type = U; };
+
+	public:
+		TEST_METHOD(TestMethod) {
+			static_assert(false == my::is_function<A>::value, "");
+			static_assert(true == my::is_function<int(int)>::value, "");
+			static_assert(false == my::is_function<int>::value, "");
+
+			using T = PM_traits<decltype(&A::fun)>::member_type; // T is int() const&
+			static_assert(true == my::is_function<T>::value, "");
+		}
+	};
+
+	TEST_CLASS(Test_is_member_function_object) {
+	private:
+		class A {
+		public:
+			void member() {}
+		};
+
+	public:
+		TEST_METHOD(TestMethod) {
+			// fails at compile time if A::member is a data member and not a function
+			static_assert(my::is_member_function_pointer<decltype(&A::member)>::value,
+						  "A::member is not a member function.");
+		}
+	};
+
+	TEST_CLASS(Test_is_member_object_object) {
+	public:
+		TEST_METHOD(TestMethod) {
+			class A {};
+			static_assert(true == my::is_member_object_pointer<int(A::*)>::value, "");
+			static_assert(false == my::is_member_object_pointer<int(A::*)()>::value, "");
+		}
+	};
+
+	TEST_CLASS(Test_is_enum) {
+	private:
+		struct A { enum E {}; };
+
+		enum E {};
+
+		enum class Ec: int {};
+
+	public:
+		TEST_METHOD(TestMethod) {
+			static_assert(my::is_enum<A>::value == false, "");
+			static_assert(my::is_enum<A::E>::value == true, "");
+			static_assert(my::is_enum<E>::value == true, "");
+			static_assert(my::is_enum<Ec>::value == true, "");
+			static_assert(my::is_enum<int>::value == false, "");
+		}
+	};
+
 }
