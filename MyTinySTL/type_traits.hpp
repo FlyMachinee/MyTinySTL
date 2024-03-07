@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "macros.h"
 
+// 有关type traits的编译器内建函数, 见 https://learn.microsoft.com/en-us/cpp/extensions/compiler-support-for-type-traits-cpp-component-extensions
+
 #if __HAS_CPP11
 namespace __MY_NAMESPACE {
 
