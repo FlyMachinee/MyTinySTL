@@ -1125,6 +1125,36 @@ namespace __MY_NAMESPACE {
 	#endif
 	#pragma endregion is_class
 
+	// checks if a type is a pointer type
+	// 检查类型是否为指针类型
+	#pragma region is_pointer
+	template <typename T>
+	struct __is_raw_pointer: false_type {};
+	template <typename T>
+	struct __is_raw_pointer<T*>: true_type {};
+
+	/**
+	 * @brief checks if a type is a pointer type
+	 * @brief 检查类型是否为指针类型
+	 * @brief 包含成员 value, 表示其判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
+	template <typename T>
+	struct is_pointer: __is_raw_pointer<typename remove_cv<T>::type> {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type is a pointer type
+	 * @brief 检查类型是否为指针类型
+	 * @brief 其本身即表示判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_pointer_v = is_pointer<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_pointer
 
 } // namespace __MY_NAMESPACE
 #endif // __HAS_CPP11
