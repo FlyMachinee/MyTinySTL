@@ -1355,5 +1355,48 @@ namespace __MY_NAMESPACE {
 	inline constexpr bool is_enum_v = is_enum<T>::value;
 	#endif // __HAS_CPP17
 	#pragma endregion is_enum
+
+
+
+	// ======================================================
+	//
+	//  Composite type categories and judges in compile-time
+	//  复合类型分类的编译期内判断
+	//
+	// ======================================================
+
+	// checks if a type is a pointer to a non-static member function or object
+	// 检查类型是否为指向非静态成员函数或对象的指针类型
+	#pragma region is_member_pointer
+	template <typename T>
+	struct __is_member_pointer: false_type {};
+	template <typename T, class C>
+	struct __is_member_pointer<T C::*>: true_type {};
+
+	/**
+	 * @brief checks if a type is a pointer to a non-static member function or object
+	 * @brief 检查类型是否为指向非静态成员函数或对象的指针类型
+	 * @brief 包含成员 value, 表示其判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
+	template <typename T>
+	struct is_member_pointer: __is_member_pointer<typename remove_cv<T>::type> {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type is a pointer to a non-static member function or object
+	 * @brief 检查类型是否为指向非静态成员函数或对象的指针类型
+	 * @brief 其本身即表示判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_member_pointer_v = is_member_pointer<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_member_pointer
+
+
+
 } // namespace __MY_NAMESPACE
 #endif // __HAS_CPP11
