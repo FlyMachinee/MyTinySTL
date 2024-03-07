@@ -1324,8 +1324,7 @@ namespace __MY_NAMESPACE {
 	 * 
 	 * @tparam T 需要进行判断的类型
 	 * 
-	 * @note
-	 *		https://zh.cppreference.com/w/cpp/language/type
+	 * @note https://zh.cppreference.com/w/cpp/language/type
 	*/
 	template <typename T>
 	struct is_enum: integral_constant<
