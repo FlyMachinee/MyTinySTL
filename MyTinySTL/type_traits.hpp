@@ -1156,5 +1156,60 @@ namespace __MY_NAMESPACE {
 	#endif // __HAS_CPP17
 	#pragma endregion is_pointer
 
+	// checks if a type is an lvalue reference
+	// 检查类型是否为左值引用
+	#pragma region is_lvalue_reference
+	/**
+	 * @brief checks if a type is an lvalue reference
+	 * @brief 检查类型是否为左值引用
+	 * @brief 包含成员 value, 表示其判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
+	template <typename T>
+	struct is_lvalue_reference: false_type {};
+	template <typename T>
+	struct is_lvalue_reference<T&>: true_type {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type is an lvalue reference
+	 * @brief 检查类型是否为左值引用
+	 * @brief 其本身即表示判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_lvalue_reference_v = is_lvalue_reference<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_lvalue_reference
+
+	// checks if a type is an rvalue reference
+	// 检查类型是否为右值引用
+	#pragma region is_rvalue_reference
+	/**
+	 * @brief checks if a type is an rvalue reference
+	 * @brief 检查类型是否为右值引用
+	 * @brief 包含成员 value, 表示其判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
+	template <typename T>
+	struct is_rvalue_reference: false_type {};
+	template <typename T>
+	struct is_rvalue_reference<T&&>: true_type {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type is an rvalue reference
+	 * @brief 检查类型是否为右值引用
+	 * @brief 其本身即表示判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_rvalue_reference_v = is_rvalue_reference<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_rvalue_reference
 } // namespace __MY_NAMESPACE
 #endif // __HAS_CPP11
