@@ -1393,8 +1393,7 @@ namespace __MY_NAMESPACE {
 	template <typename T>
 	inline constexpr bool is_arithmetic_v = is_arithmetic<T>::value;
 	#endif // __HAS_CPP17
-
-	#pragma endregion
+	#pragma endregion is_arithmetic
 
 	// checks if a type is a fundamental type
 	// 检查是否是基础类型
@@ -1425,8 +1424,7 @@ namespace __MY_NAMESPACE {
 	template <typename T>
 	inline constexpr bool is_fundamental_v = is_fundamental<T>::value;
 	#endif // __HAS_CPP17
-	#pragma endregion
-
+	#pragma endregion is_fundamental
 	
 	// checks if a type is a pointer to a non-static member function or object
 	// 检查类型是否为指向非静态成员函数或对象的指针类型
