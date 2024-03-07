@@ -1245,5 +1245,37 @@ namespace __MY_NAMESPACE {
 	inline constexpr bool is_function_v = is_function<T>::value;
 	#endif // __HAS_CPP17
 	#pragma endregion is_function
+
+	// checks if a type is a pointer to a non-static member function
+	// 检查类型是否为指向非静态成员函数的指针
+	#pragma region is_member_function_pointer
+	template <typename T>
+	struct __is_member_function_pointer: false_type {};
+	template <typename Func, class C>
+	struct __is_member_function_pointer<Func C::*>: is_function<Func> {};
+
+	/**
+	 * @brief checks if a type is a pointer to a non-static member function
+	 * @brief 检查类型是否为指向非静态成员函数的指针
+	 * @brief 包含成员 value, 表示其判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
+	template <typename T>
+	struct is_member_function_pointer: __is_member_function_pointer<typename remove_cv<T>::type> {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type is a pointer to a non-static member function
+	 * @brief 检查类型是否为指向非静态成员函数的指针
+	 * @brief 其本身即表示判断结果
+	 * 
+	 * @tparam T 需要进行判断的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_member_function_pointer_v = is_member_function_pointer<T>::type;
+	#endif // __HAS_CPP17
+
+	#pragma endregion is_member_function_pointer
 } // namespace __MY_NAMESPACE
 #endif // __HAS_CPP11
