@@ -953,7 +953,7 @@ namespace __MY_NAMESPACE {
 
 	// checks if a type is std::nullptr_t
 	// 检查类型是否为 std::nullptr_t 及其cv衍生物
-	#pragma region is_null_pointer
+	#pragma region is_null_pointer (>=C++14)
 	#if __HAS_CPP14
 	/**
 	 * @brief checks if a type is void
