@@ -1000,6 +1000,79 @@ namespace __MY_NAMESPACE {
 
 
 
+	// ========================================
+	// 
+	//  reduction in the dimension of an array
+	//  数组维数的降低
+	//
+	// ========================================
+
+	// removes one extent from the given array type
+	// 从给定数组类型移除一个维度
+	#pragma region remove_extent
+	/**
+	 * @brief removes one extent from the given array type
+	 * @brief 从给定数组类型移除一个维度
+	 * @brief 包含成员别名 type, 表示移除的结果
+	 * 
+	 * @tparam T 需要移除维度的类型
+	*/
+	template <typename T>
+	struct remove_extent { using type = T; };
+
+	template <typename T>
+	struct remove_extent<T[]> { using type = T; };
+
+	template <typename T, ::size_t N>
+	struct remove_extent<T[N]> { using type = T; };
+
+	#if __HAS_CPP14
+	/**
+	 * @brief removes one extent from the given array type
+	 * @brief 从给定数组类型移除一个维度
+	 * @brief 该别名即表示移除的结果
+	 * 
+	 * @tparam T 需要移除内容的类型
+	*/
+	template <typename T>
+	using remove_extent_t = typename remove_extent<T>::type;
+	#endif // __HAS_CPP14
+	#pragma endregion remove_extent
+
+	// removes all extents from the given array type
+	// 移除给定数组类型的所有维度
+	#pragma region remove_all_extents
+	/**
+	 * @brief removes all extents from the given array type
+	 * @brief 移除给定数组类型的所有维度
+	 * @brief 包含成员别名 type, 表示移除的结果
+	 * 
+	 * @tparam T 需要移除所有维度的类型
+	*/
+	template <typename T>
+	struct remove_all_extents { using type = T; };
+
+	template <typename T>
+	struct remove_all_extents<T[]> { using type = typename remove_all_extents<T>::type; };
+
+	template <typename T, ::size_t N>
+	struct remove_all_extents<T[N]> { using type = typename remove_all_extents<T>::type; };
+
+	#if __HAS_CPP14
+	/**
+	 * @brief removes all extents from the given array type
+	 * @brief 移除给定数组类型的所有维度
+	 * @brief 该别名即表示移除的结果
+	 * 
+	 * @tparam T 需要移除所有维度的类型
+	*/
+	template <typename T>
+	using remove_all_extents_t = typename remove_all_extents<T>::type;
+	#endif // __HAS_CPP14
+	#pragma endregion remove_all_extents
+
+
+
 	// ============================================
 	//
 	//  Type properties and judges in compile-time
