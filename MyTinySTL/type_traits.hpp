@@ -402,12 +402,50 @@ namespace __MY_NAMESPACE {
 	// checks if a type is derived from the other type
 	// 检查一个类型是否派生自另一个类型
 	#pragma region is_base_of
+	template <typename T>
+	struct is_class;
+	template <typename T>
+	struct remove_cv;
 
+	// 解法来自 https://zh.cppreference.com/w/cpp/types/is_base_of
 
+	template <typename Base>
+	true_type __test_convert_ptr_to_base(const volatile Base*);
+	template <typename>
+	false_type __test_convert_ptr_to_base(const volatile void*);
 
+	template <typename Base, typename Derived>
+	auto __test_is_base_of(int) -> decltype(__test_convert_ptr_to_base<Base>(static_cast<Derived*>(nullptr)));
+	template <typename, typename>
+	auto __test_is_base_of(...) -> true_type; // 处理私有、受保护或有歧义的基类
+
+	/**
+	 * @brief checks if a type is derived from the other type
+	 * @brief 检查一个类型是否派生自另一个类型
+	 * @brief 包含成员 value, 表示其判断结果
+	 * 
+	 * @tparam Base 需要进行判断的基类类型
+	 * @tparam Derived 需要进行判断的派生类类型
+	*/
+	template <typename Base, typename Derived>
+	struct is_base_of: integral_constant<
+		bool,
+		is_class<Base>::value &&
+		is_class<Derived>::value &&
+		decltype(__test_is_base_of<Base, Derived>(0))::value
+	> {};
 
 	#if __HAS_CPP17
-	
+	/**
+	 * @brief checks if a type is derived from the other type
+	 * @brief 检查一个类型是否派生自另一个类型
+	 * @brief 其本身即表示判断结果
+	 * 
+	 * @tparam Base 需要进行判断的基类类型
+	 * @tparam Derived 需要进行判断的派生类类型
+	*/
+	template <typename T>
+	inline constexpr bool is_base_of_v = is_base_of<T>::value;
 	#endif // __HAS_CPP17
 
 	#pragma endregion
