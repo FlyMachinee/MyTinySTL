@@ -97,6 +97,62 @@ namespace Test_type_traits {
 		}
 	};
 
+	TEST_CLASS(Test_is_base_of) {
+	private:
+		class A {};
+		class B: A {};
+		class C: B {};
+		class D {};
+		union E {};
+	public:
+		TEST_METHOD(TestMethod) {
+			static_assert(my::is_base_of<A, A>::value     == true  &&
+				  my::is_base_of<A, B>::value     == true  &&
+				  my::is_base_of<A, C>::value     == true  &&
+				  my::is_base_of<A, D>::value     == false &&
+				  my::is_base_of<B, A>::value     == false &&
+				  my::is_base_of<E, E>::value     == false &&
+				  my::is_base_of<int, int>::value == false);
+		}
+	};
+
+	TEST_CLASS(Test_is_convertible) {
+	private:
+		class E { public: template<class T> E(T&&) {} };
+	public:
+		TEST_METHOD(TestMethod) {
+			class A {};
+			class B: public A {};
+			class C {};
+			class D { public: operator C() { return c; }  C c; };
+			class F {
+				~F() = delete;
+			};
+			class G {};
+			class H: private G {};
+
+			static_assert(true == my::is_convertible<B*, A*>::value, "");
+			static_assert(false == my::is_convertible<A*, B*>::value, "");
+			static_assert(false == my::is_convertible<B*, C*>::value, "");
+			static_assert(true == my::is_convertible<D, C>::value, "");
+
+			// 完美转发构造函数使类能从任何类型转换
+			static_assert(true == my::is_convertible<A, E>::value, ""); //< B, C, D 等
+
+			// static_assert(false == my::is_convertible<F, F>::value, ""); F为非完整类型，未定义行为
+			static_assert(false == my::is_convertible<H, G>::value, "");
+
+			static_assert(false == my::is_convertible<int, void>::value, ""); //< B, C, D 等
+			static_assert(false == my::is_convertible<void, int>::value, ""); //< B, C, D 等
+
+			// 数组与函数类型不能进行返回
+			static_assert(false == my::is_convertible<int*, int[42]>::value, "");
+			static_assert(true == my::is_convertible<int[42], int*>::value, "");
+			static_assert(true == my::is_convertible<int[], int*>::value, "");
+			static_assert(false == my::is_convertible<void(int), void(int)>::value, "");
+		}
+	};
+
 	TEST_CLASS(Test_conditional) {
 	public:
 		TEST_METHOD(TestMethod) {
@@ -115,15 +171,15 @@ namespace Test_type_traits {
 		TEST_METHOD(TestMethod) {
 			static_assert
 				(
-					my::is_same<std::remove_cv_t<int>, int>::value &&
-					my::is_same<std::remove_cv_t<const int>, int>::value &&
-					my::is_same<std::remove_cv_t<volatile int>, int>::value &&
-					my::is_same<std::remove_cv_t<const volatile int>, int>::value &&
+					my::is_same<my::remove_cv_t<int>, int>::value &&
+					my::is_same<my::remove_cv_t<const int>, int>::value &&
+					my::is_same<my::remove_cv_t<volatile int>, int>::value &&
+					my::is_same<my::remove_cv_t<const volatile int>, int>::value &&
 					// remove_cv only works on types, not on pointers
-					! my::is_same<std::remove_cv_t<const volatile int*>, int*>::value &&
-					my::is_same<std::remove_cv_t<const volatile int*>, const volatile int*>::value &&
-					my::is_same<std::remove_cv_t<const int* volatile>, const int*>::value &&
-					my::is_same<std::remove_cv_t<int* const volatile>, int*>::value
+					! my::is_same<my::remove_cv_t<const volatile int*>, int*>::value &&
+					my::is_same<my::remove_cv_t<const volatile int*>, const volatile int*>::value &&
+					my::is_same<my::remove_cv_t<const int* volatile>, const int*>::value &&
+					my::is_same<my::remove_cv_t<int* const volatile>, int*>::value
 				, "");
 		}
 	};
@@ -188,6 +244,16 @@ namespace Test_type_traits {
 					std::is_same_v<int, my::remove_pointer<int* volatile>::type> == true &&
 					std::is_same_v<int, my::remove_pointer<int* const volatile>::type> == true
 				, "");
+		}
+	};
+
+	TEST_CLASS(Test_remove_all_extents) {
+	public:
+		TEST_METHOD(TestMethod) {
+			static_assert(my::is_same<float, my::remove_all_extents<float[1][2][3]>::type>::value, "");
+			static_assert(my::is_same<int, my::remove_all_extents<int[3][2]>::type>::value, "");
+			static_assert(my::is_same<float, my::remove_all_extents<float[1][1][1][1][2]>::type>::value, "");
+			static_assert(my::is_same<double, my::remove_all_extents<double[2][3]>::type>::value, "");
 		}
 	};
 
@@ -610,4 +676,51 @@ namespace Test_type_traits {
 		}
 	};
 
+	TEST_CLASS(Test_decay) {
+	private:
+		template<typename T, typename U>
+		constexpr static bool is_decay_equ = my::is_same<typename my::decay<T>::type, U>::value;
+	public:
+		TEST_METHOD(TestMethod) {
+			static_assert (
+				is_decay_equ<int, int> &&
+				!is_decay_equ<int, float> &&
+				is_decay_equ<int&, int> &&
+				is_decay_equ<int&&, int> &&
+				is_decay_equ<const int&, int> &&
+				is_decay_equ<int[2], int*> &&
+				!is_decay_equ<int[4][2], int*> &&
+				!is_decay_equ<int[4][2], int**> &&
+				is_decay_equ<int[4][2], int(*)[2]> &&
+				is_decay_equ<int(int), int(*)(int)>
+			);
+		}
+	};
+
+	TEST_CLASS(Test_common_type) {
+	private:
+		template <class T>
+		struct Number { 
+			T n; 
+
+			template <typename U>
+			Number<typename my::common_type<T, U>::type> operator+(const Number<U>& rhs) {
+				return { this->n + rhs.n };
+			}
+		};
+	public:
+		TEST_METHOD(TestMethod) {
+			Number<int> i1 = { 1 }, i2 = { 2 };
+			Number<double> d1 = { 2.3 }, d2 = { 3.5 };
+
+			Assert::IsTrue(my::is_same<Number<int>, decltype(i1 + i2)>::value);
+			Assert::AreEqual(3, (i1 + i2).n);
+			Assert::IsTrue(my::is_same<Number<double>, decltype(i1 + d2)>::value);
+			Assert::AreEqual(4.5, (i1 + d2).n);
+			Assert::IsTrue(my::is_same<Number<double>, decltype(d1 + i2)>::value);
+			Assert::AreEqual(4.3, (d1 + i2).n);
+			Assert::IsTrue(my::is_same<Number<double>, decltype(d1 + d2)>::value);
+			Assert::AreEqual(5.8, (d1 + d2).n);
+		}
+	};
 }
