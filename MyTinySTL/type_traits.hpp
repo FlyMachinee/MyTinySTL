@@ -787,6 +787,23 @@ namespace __MY_NAMESPACE {
 
 	#pragma endregion add_lvalue_reference add_rvalue_reference
 
+	// obtains a reference to its argument for use in unevaluated context
+	// 获取到其实参的引用，用于不求值语境中
+	#pragma region declval
+	/**
+	 * @brief obtains a reference to its argument for use in unevaluated context
+	 * @brief 获取到其实参的引用，用于不求值语境中
+	 * 
+	 * @tparam T 用于转换的类型T
+	 * @return 不能被调用，无返回值。返回类型为 T&&，除非 T = void
+	*/
+	template <typename T>
+	typename add_rvalue_reference<T>::type declval() noexcept {
+		static_assert(false, "ODR 使用 declval 的程序非良构");
+		// https://zh.cppreference.com/w/cpp/utility/declval
+		// https://zh.cppreference.com/w/cpp/language/definition#ODR_.E4.BD.BF.E7.94.A8
+	}
+	#pragma endregion
 
 
 	// ====================================================
