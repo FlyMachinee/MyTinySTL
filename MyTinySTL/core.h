@@ -1,4 +1,5 @@
-#pragma once
+﻿#ifndef __CORE_H__
+#define __CORE_H__
 
 #define __MY_NAMESPACE my
 
@@ -34,3 +35,4 @@
 #endif
 #endif // __HAS_CPP20
 
+#endif // ifndef __CORE_H__
