@@ -1863,5 +1863,96 @@ namespace __MY_NAMESPACE {
 	 * @tparam T 需要进行变换的类型
 	*/
 	#pragma endregion decay
+
+	// determines the common type of a group of types
+	// 确定一组类型的公共类型
+	#pragma region common_type
+	/**
+	 * @brief determines the common type of a group of types
+	 * @brief 确定一组类型的公共类型
+	 * @brief 如果存在此公共类型，则有成员别名 type 指向它
+	 * 
+	 * @tparam ...T 需要确定公共类型的一组类型
+	*/
+	template <typename...T>
+	struct common_type {}; // 若 sizeof...(T) 为零，则无成员 type 
+
+	// 若 sizeof...(T) 为一（即 T...只含一个类型 T0）
+	// 则成员 type 指名与 common_type<T0, T0>::type 相同的类型，若它存在
+	// 否则无成员 type
+	template <typename T0>
+	struct common_type<T0>: common_type<T0, T0> {};
+
+	__INNER_BEGIN //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	template <typename, typename, typename = void>
+	struct __get_two_common_type { /* 否则：无成员 type */ };
+
+	template <typename T1, typename T2>
+	struct __get_two_common_type<T1, T2,
+
+		/* 若 decay<decltype(false ? declval<T1>() : declval<T2>())>::type 是合法类型 */
+		__void_t<typename decay<decltype(false ? declval<T1>() : declval<T2>())>::type>
+	> {
+		/* 则：成员 type 代表该类型 */
+		using type = typename decay<decltype(false ? declval<T1>() : declval<T2>())>::type;
+	};
+	__INNER_END //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+	// 若 sizeof...(T) 为二（即 T... 含恰好二个成员 T1 与 T2）
+	template <typename T1, typename T2>
+	struct common_type<T1, T2>: conditional<
+
+		/* 若应用 std::decay 到至少 T1 与 T2 中至少一个类型后产生相异类型 */
+		! is_same<T1, typename decay<T1>::type>::value ||
+		! is_same<T2, typename decay<T2>::type>::value,
+
+		// 则：成员 type 指名与 common_type<decay<T1>::type, decay<T2>::type>::type 相同的类型，若它存在
+		// 若不存在，则无成员 type
+		common_type<typename decay<T1>::type, typename decay<T2>::type>,
+
+		// 否则：若 decay<decltype(false ? declval<T1>() : declval<T2>())>::type 是合法类型
+		// 则成员 type 代表该类型
+		// 否则，无成员 type
+		__INNER_NAMESPACE::__get_two_common_type<T1, T2>
+	>::type {};
+
+	__INNER_BEGIN //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv 
+	template <typename, typename, typename, typename...>
+	struct __get_multi_common_type { /* 其他所有情况下，无成员 type */ };
+
+	template <typename T1, typename T2, typename... R>
+	struct __get_multi_common_type<
+
+		/* 则：若 common_type<T1, T2>::type 存在 */
+		__void_t<typename common_type<T1, T2>::type>, 
+		T1, T2, R...
+	> {
+		/* 则成员 type 指代 common_type<common_type<T1, T2>::type, R...>::type ，若存在这种类型 */
+		using type = common_type<typename common_type<T1, T2>::type, R...>::type;
+	};
+	__INNER_END //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+	// 若 sizeof...(T) 大于二（即 T... 由类型 T1, T2, R... 组成）
+	// 则：若 common_type<T1, T2>::type 存在
+	// 则成员 type 指代 common_type<common_type<T1, T2>::type, R...>::type ，若存在这种类型
+	// 其他所有情况下，无成员 type 
+	template <typename T1, typename T2, typename... R>
+	struct common_type<T1, T2, R...>:
+		__INNER_NAMESPACE::__get_multi_common_type<void, T1, T2, R...> {};
+
+	#if __HAS_CPP14
+	/**
+	 * @brief determines the common type of a group of types
+	 * @brief 确定一组类型的公共类型
+	 * @brief 如果存在此公共类型，则该别名指向它，否则该别名非良构
+	 * 
+	 * @tparam ...T 需要确定公共类型的一组类型
+	*/
+	template <typename...T>
+	using common_type_t = typename common_type<T...>::type;
+	#endif // __HAS_CPP14
+	#pragma endregion common_type
+
+
 } // namespace __MY_NAMESPACE
 #endif // __HAS_CPP11
