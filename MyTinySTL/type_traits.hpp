@@ -196,7 +196,7 @@ namespace __MY_NAMESPACE {
 	/**
 	 * @brief conditionally removes a function overload or template specialization from overload resolution
 	 * @brief 条件性地从重载决议移除函数重载或模板特化
-	 * @brief 根据传入的布尔常量, 决定该别名模板是否有效
+	 * @brief 传入 true 时，该别名指向传入的类型 T，否则该别名非良构
 	 * 
 	 * @tparam Boolean 标识该别名模板是否有效的布尔值, true 则有效
 	 * @tparam T 当 Boolean 为 true 时, 该别名模板所代表的类型 
