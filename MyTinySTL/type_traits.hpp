@@ -1812,5 +1812,56 @@ namespace __MY_NAMESPACE {
 
 
 
+	// ===============================
+	// 
+	//  Miscellaneous transformations
+	//  杂项类型变换
+	//
+	// ===============================
+
+	// applies type transformations as when passing a function argument by value
+	// 实施当按值传递实参给函数时所进行的类型变换
+	#pragma region decay
+	/**
+	 * @brief applies type transformations as when passing a function argument by value
+	 * @brief 实施当按值传递实参给函数时所进行的类型变换
+	 * @brief 包含成员别名 type, 表示变换的结果
+	 * 
+	 * @tparam T 需要进行变换的类型
+	*/
+	template <typename T>
+	struct decay {
+	private:
+		using _rm_ref_t = typename remove_reference<T>::type;
+	public:
+		using type = typename conditional<
+			// 如果 T 是“U 的数组”或“到 U 的数组的引用”类型
+			is_array<_rm_ref_t>::value,
+			// 那么成员 typedef type 是 U*
+			typename remove_extent<_rm_ref_t>::type*,
+			// 否则
+			typename conditional<
+				// 如果 T 是函数类型 F 或到它的引用
+				is_function<_rm_ref_t>::value,
+				// 那么成员 typedef type 是add_pointer<F>::type
+				typename add_pointer<_rm_ref_t>::type,
+				// 否则，成员 typedef type 是 remove_cv<remove_reference<T>::type>::type
+				typename remove_cv<_rm_ref_t>::type
+			>::type
+		>::type;
+	}; // struct decay
+
+	#if __HAS_CPP14
+	template <typename T>
+	using decay_t = typename decay<T>::type;
+	#endif // __HAS_CPP14
+	/**
+	 * @brief applies type transformations as when passing a function argument by value
+	 * @brief 实施当按值传递实参给函数时所进行的类型变换
+	 * @brief 该别名即表示变换的结果
+	 * 
+	 * @tparam T 需要进行变换的类型
+	*/
+	#pragma endregion decay
 } // namespace __MY_NAMESPACE
 #endif // __HAS_CPP11
