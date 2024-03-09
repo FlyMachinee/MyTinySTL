@@ -69,6 +69,32 @@ namespace __MY_NAMESPACE {
 	using false_type = integral_constant<bool, false>;
 
 
+	// forward declarations
+	// 前置声明，便于编程
+	#pragma region forward_declarations
+
+	template <typename T>
+	struct remove_cv;
+
+	template <typename T>
+	struct add_rvalue_reference;
+	template <typename T>
+	typename add_rvalue_reference<T>::type declval() noexcept;
+
+	template <typename T>
+	struct is_void;
+	template <typename T>
+	struct is_array;
+	template <typename T>
+	struct is_class;
+	template <typename T>
+	struct is_function;
+
+	template <typename T>
+	struct is_member_pointer;
+
+	#pragma endregion forward_declarations
+
 
 	// =======================================================================
 	//
