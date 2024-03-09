@@ -447,8 +447,57 @@ namespace __MY_NAMESPACE {
 	template <typename T>
 	inline constexpr bool is_base_of_v = is_base_of<T>::value;
 	#endif // __HAS_CPP17
+	#pragma endregion is_base_of
 
-	#pragma endregion
+	// checks if a type can be converted to the other type
+	// 检查是否能转换一个类型为另一类型
+	#pragma region is_convertible
+
+	// 要求虚构函数 To test() { return std::declval<From>(); } 良构
+	// https://zh.cppreference.com/w/cpp/types/is_convertible
+
+	template <typename To>
+	To __try_implicitly_convert_to(To) {};
+	// 用 To 作为返回值类型，保证 To 能够作为返回值类型（即 !is_array 及 !is_function）
+
+	template <typename From, typename To, 
+		typename = decltype(__try_implicitly_convert_to<To>(declval<From>()))
+	>
+	true_type __is_implicitly_convertible(int) {};
+
+	template <typename, typename>
+	false_type __is_implicitly_convertible(...) {};
+
+	/**
+	 * @brief checks if a type can be implicitly converted to the other type
+	 * @brief 检查是否能隐式转换一个类型为另一类型
+	 * @brief 包含成员 value, 表示其判断结果
+	 * 
+	 * @tparam From 判断可否隐式转换的起始类型
+	 * @tparam To 判断可否隐式转换的目标类型
+	*/
+	template <typename From, typename To>
+	struct is_convertible: integral_constant<
+		bool,
+		// 保证 std::declval<From>() 能隐式转换为 To 
+		decltype(__is_implicitly_convertible<From, To>(0))::value ||
+		// 或 From 和 To 均为可有 cv 限定的 void
+		is_void<From>::value && is_void<To>::value
+	> {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type can be implicitly converted to the other type
+	 * @brief 检查是否能隐式转换一个类型为另一类型
+	 * @brief 其本身即表示判断结果
+	 * 
+	 * @tparam From 判断可否隐式转换的起始类型
+	 * @tparam To 判断可否隐式转换的目标类型
+	*/
+	template <typename From, typename To>
+	inline constexpr bool is_convertible_v = is_convertible<From, To>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_convertible
 
 
 
