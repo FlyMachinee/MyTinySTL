@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "macros.h"
+#include "core.h"
 
 // 有关type traits的编译器内建函数, 见 https://learn.microsoft.com/en-us/cpp/extensions/compiler-support-for-type-traits-cpp-component-extensions
 
@@ -12,7 +12,6 @@ namespace __MY_NAMESPACE {
 	//  帮助类及别名
 	//
 	// ==========================
-
 
 	/**
 	 * @brief helper class, as a compile-time constant
@@ -94,6 +93,7 @@ namespace __MY_NAMESPACE {
 	struct is_member_pointer;
 
 	#pragma endregion forward_declarations
+
 
 
 	// =======================================================================
@@ -349,6 +349,7 @@ namespace __MY_NAMESPACE {
 	#pragma endregion negation
 
 	
+
 	// ===============================================
 	//  
 	//	type relationships
@@ -428,22 +429,17 @@ namespace __MY_NAMESPACE {
 	// checks if a type is derived from the other type
 	// 检查一个类型是否派生自另一个类型
 	#pragma region is_base_of
-	template <typename T>
-	struct is_class;
-	template <typename T>
-	struct remove_cv;
-
 	// 解法来自 https://zh.cppreference.com/w/cpp/types/is_base_of
 
 	template <typename Base>
-	true_type __test_convert_ptr_to_base(const volatile Base*);
+	true_type __test_convert_ptr_to_base(const volatile Base*) {};
 	template <typename>
-	false_type __test_convert_ptr_to_base(const volatile void*);
+	false_type __test_convert_ptr_to_base(const volatile void*) {};
 
 	template <typename Base, typename Derived>
-	auto __test_is_base_of(int) -> decltype(__test_convert_ptr_to_base<Base>(static_cast<Derived*>(nullptr)));
+	auto __test_is_base_of(int) -> decltype(__test_convert_ptr_to_base<Base>(static_cast<Derived*>(nullptr))) {};
 	template <typename, typename>
-	auto __test_is_base_of(...) -> true_type; // 处理私有、受保护或有歧义的基类
+	auto __test_is_base_of(...) -> true_type {}; // 处理私有、受保护或有歧义的基类
 
 	/**
 	 * @brief checks if a type is derived from the other type
@@ -874,11 +870,12 @@ namespace __MY_NAMESPACE {
 	*/
 	template <typename T>
 	typename add_rvalue_reference<T>::type declval() noexcept {
-		static_assert(false, "ODR 使用 declval 的程序非良构");
+		// static_assert(false, "ODR 使用 declval 的程序非良构");
 		// https://zh.cppreference.com/w/cpp/utility/declval
 		// https://zh.cppreference.com/w/cpp/language/definition#ODR_.E4.BD.BF.E7.94.A8
 	}
-	#pragma endregion
+	#pragma endregion declval
+
 
 
 	// ====================================================
@@ -1048,6 +1045,7 @@ namespace __MY_NAMESPACE {
 	#pragma endregion is_volatile
 
 
+
 	// ====================================================
 	// 
 	//	Primary type categories and judges in compile-time
@@ -1182,7 +1180,7 @@ namespace __MY_NAMESPACE {
 	template <typename T>
 	struct is_array<T[]>: true_type {};
 
-	template <typename T, ::std::size_t N>
+	template <typename T, ::size_t N>
 	struct is_array<T[N]>: true_type {};
 
 	#if __HAS_CPP17
@@ -1411,9 +1409,6 @@ namespace __MY_NAMESPACE {
 	// checks if a type is a pointer to a non-static member object
 	// 检查类型是否为指向非静态成员对象的指针
 	#pragma region is_member_object_pointer
-	template <typename T>
-	struct is_member_pointer;
-
 	/**
 	 * @brief checks if a type is a pointer to a non-static member object
 	 * @brief 检查类型是否为指向非静态成员对象的指针
@@ -1444,8 +1439,6 @@ namespace __MY_NAMESPACE {
 	// checks if a type is an enumeration type
 	// 检查类型是否是枚举类型
 	#pragma region is_enum
-	template <typename T>
-	struct is_member_pointer;
 
 	/**
 	 * @brief checks if a type is an enumeration type
