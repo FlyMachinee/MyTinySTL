@@ -3,6 +3,10 @@
 
 #define __MY_NAMESPACE my
 
+#define __INNER_NAMESPACE inner
+#define __INNER_BEGIN namespace __INNER_NAMESPACE {
+#define __INNER_END }
+
 #ifndef __HAS_CPP11
 #if __cplusplus >= 201103L
 #define __HAS_CPP11 1

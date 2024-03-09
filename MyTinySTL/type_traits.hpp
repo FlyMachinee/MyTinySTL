@@ -111,9 +111,10 @@ namespace __MY_NAMESPACE {
 	#if __HAS_CPP17
 	/**
 	 * @brief void variadic alias template
-	 * @breif 将任意类型集合 映射至 void, 结合不推导语句与SFINAE 实现对模板形参中的某些类型进行约束
+	 * @brief 将任意类型集合 映射至 void, 结合不推导语句与SFINAE 实现对模板形参中的某些类型进行约束
 	 * @tparam ... 任意的类型
 	 *
+	 * @note
 	 * 常见用法: 
 	 *		template <class T, class = void> struct XXX {}; <== 特殊情况下(EXPRESSION_of_T 不符合语法)的模版
 	 *		template <class T> struct XXX<T, typename void_t< EXPRESSION_of_T >> {}; <== 一般情况下(EXPRESSION_of_T 符合语法)的模版
@@ -130,14 +131,21 @@ namespace __MY_NAMESPACE {
 	template <typename ...>
 	using void_t = void;
 
+	__INNER_BEGIN
 	template <typename ...>
 	using __void_t = void;
+	__INNER_END
+
 	#else
+
+	__INNER_BEGIN
 	template<typename... Ts>
 	struct __make_void { using type = void; };
 
 	template<typename... Ts>
 	using __void_t = typename __make_void<Ts...>::type;	
+	__INNER_END
+
 	#endif // __HAS_CPP17
 	#pragma endregion void_t
 
@@ -429,8 +437,10 @@ namespace __MY_NAMESPACE {
 	// checks if a type is derived from the other type
 	// 检查一个类型是否派生自另一个类型
 	#pragma region is_base_of
+
 	// 解法来自 https://zh.cppreference.com/w/cpp/types/is_base_of
 
+	__INNER_BEGIN
 	template <typename Base>
 	true_type __test_convert_ptr_to_base(const volatile Base*) {};
 	template <typename>
@@ -440,6 +450,7 @@ namespace __MY_NAMESPACE {
 	auto __test_is_base_of(int) -> decltype(__test_convert_ptr_to_base<Base>(static_cast<Derived*>(nullptr))) {};
 	template <typename, typename>
 	auto __test_is_base_of(...) -> true_type {}; // 处理私有、受保护或有歧义的基类
+	__INNER_END
 
 	/**
 	 * @brief checks if a type is derived from the other type
@@ -454,7 +465,7 @@ namespace __MY_NAMESPACE {
 		bool,
 		is_class<Base>::value &&
 		is_class<Derived>::value &&
-		decltype(__test_is_base_of<Base, Derived>(0))::value
+		decltype(__INNER_NAMESPACE::__test_is_base_of<Base, Derived>(0))::value
 	> {};
 
 	#if __HAS_CPP17
@@ -478,6 +489,7 @@ namespace __MY_NAMESPACE {
 	// 要求虚构函数 To test() { return std::declval<From>(); } 良构
 	// https://zh.cppreference.com/w/cpp/types/is_convertible
 
+	__INNER_BEGIN
 	template <typename To>
 	To __try_implicitly_convert_to(To) {};
 	// 用 To 作为返回值类型，保证 To 能够作为返回值类型（即 !is_array 及 !is_function）
@@ -489,6 +501,7 @@ namespace __MY_NAMESPACE {
 
 	template <typename, typename>
 	false_type __is_implicitly_convertible(...) {};
+	__INNER_END
 
 	/**
 	 * @brief checks if a type can be implicitly converted to the other type
@@ -502,7 +515,7 @@ namespace __MY_NAMESPACE {
 	struct is_convertible: integral_constant<
 		bool,
 		// 保证 std::declval<From>() 能隐式转换为 To 
-		decltype(__is_implicitly_convertible<From, To>(0))::value ||
+		decltype(__INNER_NAMESPACE::__is_implicitly_convertible<From, To>(0))::value ||
 		// 或 From 和 To 均为可有 cv 限定的 void
 		is_void<From>::value && is_void<To>::value
 	> {};
@@ -783,6 +796,7 @@ namespace __MY_NAMESPACE {
 	// 为类型引入左值引用及右值引用, 遵循引用折叠原则
 	#pragma region add_lvalue_reference add_rvalue_reference
 
+	__INNER_BEGIN
 	#if __HAS_CPP20
 	// handle non-reference-able type
 	// 处理不可引用的类型
@@ -813,6 +827,7 @@ namespace __MY_NAMESPACE {
 		using rvalue_type = T&&;
 	};
 	#endif // definition of __try_add_reference
+	__INNER_END
 
 	/**
 	 * @brief adds an lvalue reference to the given type
@@ -822,7 +837,7 @@ namespace __MY_NAMESPACE {
 	 * @tparam T 需要添加左值引用的类型
 	*/
 	template <typename T>
-	struct add_lvalue_reference { using type = typename __try_add_reference<T>::lvalue_type; };
+	struct add_lvalue_reference { using type = typename __INNER_NAMESPACE::__try_add_reference<T>::lvalue_type; };
 
 	/**
 	 * @brief adds an rvalue reference to the given type
@@ -832,7 +847,7 @@ namespace __MY_NAMESPACE {
 	 * @tparam T 需要添加右值引用的类型
 	*/
 	template <typename T>
-	struct add_rvalue_reference { using type = typename __try_add_reference<T>::rvalue_type; };
+	struct add_rvalue_reference { using type = typename __INNER_NAMESPACE::__try_add_reference<T>::rvalue_type; };
 
 	#if __HAS_CPP14
 	/**
@@ -939,10 +954,15 @@ namespace __MY_NAMESPACE {
 
 	// handle reference-able type and void
 	// 处理可引用的类型, 以及void
-	template <typename T> requires requires { typename type_identity<typename remove_reference<T>::type*>; }
+	template <typename T> 
+		requires requires {
+		typename type_identity<typename remove_reference<T>::type*>;
+	}
 	struct add_pointer<T> { using type = typename remove_reference<T>::type*; };
 
 	#else // ^^^ __HAS_CPP20 / vvv !__HAS_CPP20
+
+	__INNER_BEGIN
 	template <typename T, typename = void>
 	struct __try_add_pointer {
 		using pointer_type = T;
@@ -952,6 +972,7 @@ namespace __MY_NAMESPACE {
 	struct __try_add_pointer<T, typename __void_t<typename remove_reference<T>::type*>> {
 		using pointer_type = typename remove_reference<T>::type*;
 	};
+	__INNER_END
 
 	/**
 	 * @brief adds a pointer to the given type
@@ -961,7 +982,7 @@ namespace __MY_NAMESPACE {
 	 * @tparam T 需要添加指针的类型
 	*/
 	template <typename T>
-	struct add_pointer { using type = typename __try_add_pointer<T>::pointer_type; };
+	struct add_pointer { using type = typename __INNER_NAMESPACE::__try_add_pointer<T>::pointer_type; };
 	#endif // definition of add_pointer
 
 	#if __HAS_CPP14
@@ -1225,10 +1246,13 @@ namespace __MY_NAMESPACE {
 	// checks if a type is a non-union class type
 	// 检查类型是否为非联合类类型
 	#pragma region is_class
+
+	__INNER_BEGIN
 	template <typename T, typename = void>
 	struct __is_class_or_union: false_type {};
 	template <typename T>
 	struct __is_class_or_union<T, __void_t<int T::*>>: true_type {};
+	__INNER_END
 
 	/**
 	 * @brief checks if a type is a non-union class type
@@ -1238,7 +1262,11 @@ namespace __MY_NAMESPACE {
 	 * @tparam T 需要进行判断的类型
 	*/
 	template <typename T>
-	struct is_class: integral_constant<bool, __is_class_or_union<T>::value && !is_union<T>::value> {};
+	struct is_class: integral_constant<
+		bool, 
+		__INNER_NAMESPACE::__is_class_or_union<T>::value && 
+		!is_union<T>::value
+	> {};
 
 	#if __HAS_CPP17
 	/**
@@ -1256,10 +1284,13 @@ namespace __MY_NAMESPACE {
 	// checks if a type is a pointer type
 	// 检查类型是否为指针类型
 	#pragma region is_pointer
+
+	__INNER_BEGIN
 	template <typename T>
 	struct __is_raw_pointer: false_type {};
 	template <typename T>
 	struct __is_raw_pointer<T*>: true_type {};
+	__INNER_END
 
 	/**
 	 * @brief checks if a type is a pointer type
@@ -1269,7 +1300,7 @@ namespace __MY_NAMESPACE {
 	 * @tparam T 需要进行判断的类型
 	*/
 	template <typename T>
-	struct is_pointer: __is_raw_pointer<typename remove_cv<T>::type> {};
+	struct is_pointer: __INNER_NAMESPACE::__is_raw_pointer<typename remove_cv<T>::type> {};
 
 	#if __HAS_CPP17
 	/**
@@ -1377,10 +1408,13 @@ namespace __MY_NAMESPACE {
 	// checks if a type is a pointer to a non-static member function
 	// 检查类型是否为指向非静态成员函数的指针
 	#pragma region is_member_function_pointer
+
+	__INNER_BEGIN
 	template <typename T>
 	struct __is_member_function_pointer: false_type {};
 	template <typename Func, class C>
 	struct __is_member_function_pointer<Func C::*>: is_function<Func> {};
+	__INNER_END
 
 	/**
 	 * @brief checks if a type is a pointer to a non-static member function
@@ -1390,7 +1424,7 @@ namespace __MY_NAMESPACE {
 	 * @tparam T 需要进行判断的类型
 	*/
 	template <typename T>
-	struct is_member_function_pointer: __is_member_function_pointer<typename remove_cv<T>::type> {};
+	struct is_member_function_pointer: __INNER_NAMESPACE::__is_member_function_pointer<typename remove_cv<T>::type> {};
 
 	#if __HAS_CPP17
 	/**
@@ -1457,7 +1491,7 @@ namespace __MY_NAMESPACE {
 		!is_null_pointer<T>::value &&
 		!is_void<T>::value &&
 		!is_array<T>::value &&
-		!__is_class_or_union<T>::value &&
+		!__INNER_NAMESPACE::__is_class_or_union<T>::value &&
 		!is_member_pointer<T>::value &&
 		!is_pointer<T>::value &&
 		!is_function<T>::value &&
@@ -1552,10 +1586,13 @@ namespace __MY_NAMESPACE {
 	// checks if a type is a pointer to a non-static member function or object
 	// 检查类型是否为指向非静态成员函数或对象的指针类型
 	#pragma region is_member_pointer
+
+	__INNER_BEGIN
 	template <typename T>
 	struct __is_member_pointer: false_type {};
 	template <typename T, class C>
 	struct __is_member_pointer<T C::*>: true_type {};
+	__INNER_END
 
 	/**
 	 * @brief checks if a type is a pointer to a non-static member function or object
@@ -1565,7 +1602,7 @@ namespace __MY_NAMESPACE {
 	 * @tparam T 需要进行判断的类型
 	*/
 	template <typename T>
-	struct is_member_pointer: __is_member_pointer<typename remove_cv<T>::type> {};
+	struct is_member_pointer: __INNER_NAMESPACE::__is_member_pointer<typename remove_cv<T>::type> {};
 
 	#if __HAS_CPP17
 	/**
@@ -1628,7 +1665,7 @@ namespace __MY_NAMESPACE {
 		bool, 
 		is_scalar<T>::value ||
 		is_array<T>::value ||
-		__is_class_or_union<T>::value
+		__INNER_NAMESPACE::__is_class_or_union<T>::value
 	> {};
 
 	#if __HAS_CPP17
