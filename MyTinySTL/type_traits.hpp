@@ -1080,6 +1080,102 @@ namespace __MY_NAMESPACE {
 	//
 	// ============================================
 
+	// obtains the type's alignment requirements
+	// 获取类型的对齐要求
+	#pragma region alignment_of
+	/**
+	 * @brief obtains the type's alignment requirements
+	 * @brief 获取类型的对齐要求
+	 * @brief 包含成员 value，表示对齐要求的值
+	 *
+	 * @tparam T 需要获取对齐要求的类型
+	*/
+	template <typename T>
+	struct alignment_of: integral_constant<::size_t, alignof(T)> {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief obtains the type's alignment requirements
+	 * @brief 获取类型的对齐要求
+	 * @brief 该常量即表示对齐要求的值
+	 *
+	 * @tparam T 需要获取对齐要求的类型
+	*/
+	template <typename T>
+	inline constexpr ::size_t alignment_of_v = alignof(T);
+	#endif // __HAS_CPP17
+	#pragma endregion alignment_of
+
+	// obtains the number of dimensions of an array type
+	// 获取数组类型的维数
+	#pragma region rank
+	/**
+	 * @brief obtains the number of dimensions of an array type
+	 * @brief 获取数组类型的维数
+	 * @brief 包含成员 value，表示其维数的值
+	 * 
+	 * @tparam T 需要获取维数的类型
+	*/
+	template <typename T>
+	struct rank: integral_constant<::size_t, 0ULL> {};
+
+	template <typename T>
+	struct rank<T[]>: integral_constant<::size_t, 1ULL + rank<T>::value> {};
+
+	template <typename T, ::size_t N>
+	struct rank<T[N]>: integral_constant<::size_t, 1ULL + rank<T>::value> {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief obtains the number of dimensions of an array type
+	 * @brief 获取数组类型的维数
+	 * @brief 该常量即表示对齐要求的值
+	 * 
+	 * @tparam T 需要获取维数的类型
+	*/
+	template <typename T>
+	inline constexpr ::size_t rank_v = rank<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion rank
+
+	// obtains the size of an array type along a specified dimension
+	// 获取数组类型在指定维度的大小
+	#pragma region extent
+	/**
+	 * @brief obtains the size of an array type along a specified dimension
+	 * @brief 获取数组类型在指定维度的大小
+	 * @brief 包含成员 value，表示其维度的大小
+	 * 
+	 * @tparam T 需要获取维度大小的类型
+	 * @tparam Dm 指定的维度
+	*/
+	template <typename T, unsigned Dm = 0>
+	struct extent: integral_constant<::size_t, 0ULL> {};
+
+	template <typename T, unsigned Dm>
+	struct extent<T[], Dm>: extent<T, Dm - 1U> {};
+	template <typename T>
+	struct extent<T[], 0U>: integral_constant<::size_t, 0LL> {};
+
+	template <typename T, ::size_t N, unsigned Dm>
+	struct extent<T[N], Dm>: extent<T, Dm - 1U> {};
+	template <typename T, ::size_t N>
+	struct extent<T[N], 0U>: integral_constant<::size_t, N> {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief obtains the size of an array type along a specified dimension
+	 * @brief 获取数组类型在指定维度的大小
+	 * @brief 该常量即表示其维度的大小
+	 * 
+	 * @tparam T 需要获取维度大小的类型
+	 * @tparam Dm 指定的维度
+	*/
+	template <typename T, unsigned Dm = 0>
+	inline constexpr ::size_t extent_v = extent<T, Dm>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion extent
+
 	// checks if a type is const-qualified
 	// 检查类型是否为 const 限定
 	#pragma region is_const
