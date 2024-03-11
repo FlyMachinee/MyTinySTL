@@ -723,4 +723,110 @@ namespace Test_type_traits {
 			Assert::AreEqual(5.8, (d1 + d2).n);
 		}
 	};
+
+	TEST_CLASS(Test_constructible) {
+	private:
+		class Foo {
+			int v1;
+			double v2;
+		public:
+			Foo(int n): v1(n), v2() {}
+			Foo(int n, double f) noexcept: v1(n), v2(f) {}
+		};
+	public:
+		TEST_METHOD(TestMethod) {
+			static_assert(true == my::is_trivially_constructible<Foo, const Foo&>::value, "");
+			static_assert(false == my::is_trivially_constructible<Foo, int>::value, "");
+			static_assert(true == my::is_constructible<Foo, int>::value, "");
+			static_assert(true == my::is_constructible<Foo, int, int>::value, "");
+			static_assert(false == my::is_constructible<Foo, int*, int>::value, "");
+			static_assert(false == my::is_nothrow_constructible<Foo, int>::value, "");
+			static_assert(true == my::is_nothrow_constructible<Foo, int, double>::value, "");
+		}
+	};
+
+	TEST_CLASS(Test_default_constructible) {
+	private:
+		struct Ex1 {
+			std::string str; // 成员拥有非平凡默认构造函数
+		};
+		struct Ex2 {
+			int n;
+			Ex2() = default; // 平凡且不抛出
+		};
+	public:
+		TEST_METHOD(TestMethod) {
+			static_assert(true == my::is_default_constructible<Ex1>::value, "");
+			static_assert(false == my::is_trivially_default_constructible<Ex1>::value, "");
+			static_assert(true == my::is_trivially_default_constructible<Ex2>::value, "");
+			static_assert(true == my::is_nothrow_default_constructible<Ex2>::value, "");
+		};
+	};
+
+	TEST_CLASS(Test_copy_constructible) {
+	private:
+		struct S1 {
+			std::string str; // 成员拥有非平凡复制构造函数
+		};
+
+		struct S2 {
+			int n;
+			S2(const S2&) = default; // 平凡且不抛出
+		};
+
+		struct S3 {
+			S3(const S3&) = delete; // 显示弃置
+		};
+
+		struct S4 {
+			S4(S4&) {}; // 无法绑定 const，因而不是可复制构造
+		};
+	public:
+		TEST_METHOD(TestMethod) {
+			static_assert(my::is_copy_constructible<S1>::value, "");
+			static_assert(!my::is_trivially_copy_constructible<S1>::value, "");
+			static_assert(my::is_trivially_copy_constructible<S2>::value, "");
+			static_assert(my::is_nothrow_copy_constructible<S2>::value, "");
+			static_assert(!my::is_copy_constructible<S3>::value, "");
+			static_assert(!my::is_copy_constructible<S4>::value, "");
+		}
+	};
+
+	TEST_CLASS(Test_move_constructible) {
+	private:
+		struct Ex1 {
+			std::string str; // 成员拥有非平凡而不抛出的移动构造函数
+		};
+
+		struct Ex2 {
+			int n;
+			Ex2(Ex2&&) = default; // 平凡且不抛出
+		};
+
+		struct NoMove1 {
+			// 避免默认移动构造函数的隐式声明；
+			// 然而，该类仍为可移动构造因为复制构造函数能绑定到右值参数
+			NoMove1(const NoMove1&) {}
+		};
+
+		struct NoMove2 {
+			// 由于左值引用无法绑定右值实参，这并非可移动构造
+			NoMove2(NoMove2&) {}
+		};
+	public:
+		TEST_METHOD(TestMethod) {
+			static_assert(my::is_move_constructible<Ex1>::value, "");
+			static_assert(!my::is_trivially_move_constructible<Ex1>::value, "");
+			static_assert(my::is_nothrow_move_constructible<Ex1>::value, "");
+			static_assert(my::is_move_constructible<Ex2>::value, "");
+			static_assert(my::is_trivially_move_constructible<Ex2>::value, "");
+			static_assert(my::is_nothrow_move_constructible<Ex2>::value, "");
+			static_assert(my::is_move_constructible<NoMove1>::value, "");
+			static_assert(!my::is_trivially_move_constructible<NoMove1>::value, "");
+			static_assert(!my::is_nothrow_move_constructible<NoMove1>::value, "");
+			static_assert(!my::is_move_constructible<NoMove2>::value, "");
+			static_assert(!my::is_trivially_move_constructible<NoMove2>::value, "");
+			static_assert(!my::is_nothrow_move_constructible<NoMove2>::value, "");
+		}
+	};
 }
