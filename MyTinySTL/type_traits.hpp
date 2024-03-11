@@ -1243,6 +1243,8 @@ namespace __MY_NAMESPACE {
 	//
 	// ====================================================
 
+	#pragma region primary series
+
 	// checks if a type is void
 	// 检查类型是否为 void 及其cv衍生物
 	#pragma region is_void
@@ -1681,6 +1683,8 @@ namespace __MY_NAMESPACE {
 	#endif // __HAS_CPP17
 	#pragma endregion is_enum
 
+	#pragma endregion primary series
+
 
 
 	// =========================================================================
@@ -1690,6 +1694,8 @@ namespace __MY_NAMESPACE {
 	//  类型框图 https://upload.cppreference.com/mwiki/images/9/96/cpp_types.svg
 	//
 	// =========================================================================
+
+	#pragma region composite series
 
 	// checks if a type is an arithmetic type
 	// 检查类型是否为算术类型
@@ -1905,6 +1911,8 @@ namespace __MY_NAMESPACE {
 	inline constexpr bool is_reference_v = is_reference<T>::value;
 	#endif // __HAS_CPP17
 	#pragma endregion is_reference
+
+	#pragma endregion composite series
 
 
 
