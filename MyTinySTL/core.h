@@ -39,4 +39,10 @@
 #endif
 #endif // __HAS_CPP20
 
+#if __HAS_CPP17
+#define __NODISCARD [[nodiscard]]
+#else // ^^^ __HAS_CPP17 / vvv !__HAS_CPP17
+#define __NODISCARD
+#endif // __HAS_CPP17
+
 #endif // ifndef __CORE_H__
