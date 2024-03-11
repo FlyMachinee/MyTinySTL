@@ -2050,5 +2050,399 @@ namespace __MY_NAMESPACE {
 	#pragma endregion common_type
 
 
+
+	// ======================
+	//
+	//  Supported operations
+	//  判断类型是否支持某种行为
+	// 
+	// ======================
+
+	// (non-standard feature) checks if a type is a referenceable type
+	// （非标准内容）检查类型是否是可引用类型
+	#pragma region is_referenceable
+
+	__INNER_BEGIN
+	template <typename T, typename = void>
+	struct __test_is_referenceable: false_type {};
+
+	template <typename T>
+	struct __test_is_referenceable<T, __void_t<T&>>: true_type {};
+	__INNER_END
+
+	/**
+	 * @brief (non-standard feature) checks if a type is a referenceable type
+	 * @brief （非标准内容）检查类型是否是可引用类型
+	 * @brief 包含成员 type，表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	struct is_referenceable: __INNER_NAMESPACE::__test_is_referenceable<T> {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief (non-standard feature) checks if a type is a referenceable type
+	 * @brief （非标准内容）检查类型是否是可引用类型
+	 * @brief 其本身即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_referenceable_v = is_referenceable<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_referenceable
+
+	#pragma region constructible series
+
+	// checks if a type has a constructor for specific arguments
+	// 检查类型是否带有针对特定实参的构造函数
+	#pragma region is_constructible
+
+	__INNER_BEGIN
+	// 要求变量定义 T obj(std::declval<Args>()...); 为良构
+	template <typename T, typename... Args, typename = decltype(T(declval<Args>()...))>
+	auto __try_construct(int) -> true_type {}
+
+	template <typename...>
+	auto __try_construct(...) -> false_type {}
+	__INNER_END
+
+	/**
+	 * @brief checks if a type has a constructor for specific arguments
+	 * @brief 检查类型是否带有针对特定实参的构造函数
+	 * @brief 包含成员 value, 表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	 * @tparam ...Args 构造函数的特定实参
+	*/
+	template <typename T, typename... Args>
+	struct is_constructible: conditional<
+		// 如果 T 是对象或引用类型
+		is_object<T>::value || is_reference<T>::value,
+		// 且变量定义 T obj(std::declval<Args>()...); 为良构
+		decltype(__INNER_NAMESPACE::__try_construct<T, Args...>(0)), 
+		// 对于其它类型，value 等于 false
+		false_type
+	>::type {};
+		
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type has a constructor for specific arguments
+	 * @brief 检查类型是否带有针对特定实参的构造函数
+	 * @brief 该常量即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	 * @tparam ...Args 构造函数的特定实参
+	*/
+	template <typename T, typename... Args>
+	inline constexpr bool is_constructible_v = is_constructible<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_constructible
+
+	#pragma region is_trivially_constructible
+	/**
+	 * @brief checks if a type has a trivial constructor for specific arguments
+	 * @brief 检查类型是否带有针对特定实参的平凡的构造函数
+	 * @brief 包含成员 value, 表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	 * @tparam ...Args 构造函数的特定实参
+	*/
+	template <typename T, typename... Args>
+	struct is_trivially_constructible: integral_constant<bool, __is_trivially_constructible(T, Args...)> {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type has a trivial constructor for specific arguments
+	 * @brief 检查类型是否带有针对特定实参的平凡的构造函数
+	 * @brief 该常量即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	 * @tparam ...Args 构造函数的特定实参
+	*/
+	template <typename T, typename... Args>
+	inline constexpr bool is_trivially_constructible_v = is_trivially_constructible<T, Args...>::type;
+	#endif // __HAS_CPP17
+	#pragma endregion is_trivially_constructible
+
+	#pragma region is_nothrow_constructible
+	/**
+	 * @brief checks if a type has a nothrow constructor for specific arguments
+	 * @brief 检查类型是否带有不抛出异常的针对特定实参的构造函数
+	 * @brief 包含成员 value, 表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	 * @tparam ...Args 构造函数的特定实参
+	*/
+	template <typename T, typename... Args>
+	struct is_nothrow_constructible: integral_constant<
+		bool,
+		is_constructible<T, Args...>::value &&
+		noexcept(T(declval<Args>()...))
+	> {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type has a nothrow constructor for specific arguments
+	 * @brief 检查类型是否带有不抛出异常的针对特定实参的构造函数
+	 * @brief 该常量即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	 * @tparam ...Args 构造函数的特定实参
+	*/
+	template <typename T, typename... Args>
+	inline constexpr bool is_nothrow_constructible_v = is_nothrow_constructible<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_nothrow_constructible
+
+	// checks if a type has a default constructor
+	// 检查类型是否有默认构造函数 
+	#pragma region is_default_constructible
+	/**
+	 * @brief checks if a type has a default constructor
+	 * @brief 检查类型是否有默认构造函数
+	 * @brief 包含成员 value, 表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	struct is_default_constructible: is_constructible<T> {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type has a default constructor
+	 * @brief 检查类型是否有默认构造函数
+	 * @brief 该常量即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_default_constructible_v = is_default_constructible<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_default_constructible
+
+	#pragma region is_trivially_default_constructible
+	/**
+	 * @brief checks if a type has a trivial default constructor
+	 * @brief 检查类型是否有平凡的默认构造函数
+	 * @brief 包含成员 value, 表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	struct is_trivially_default_constructible: is_trivially_constructible<T> {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type has a trivial default constructor
+	 * @brief 检查类型是否有平凡的默认构造函数
+	 * @brief 该常量即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_trivially_default_constructible_v = is_trivially_default_constructible<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_trivially_default_constructible
+
+	#pragma region is_nothrow_default_constructible
+	/**
+	 * @brief checks if a type has a nothrow default constructor
+	 * @brief 检查类型是否有不抛出异常的默认构造函数
+	 * @brief 包含成员 value, 表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	struct is_nothrow_default_constructible: is_nothrow_constructible<T> {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type has a nothrow default constructor
+	 * @brief 检查类型是否有不抛出异常的默认构造函数
+	 * @brief 该常量即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_nothrow_default_constructible_v = is_nothrow_default_constructible<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_nothrow_default_constructible
+
+	// checks if a type has a copy constructor
+	// 检查类型是否拥有复制构造函数
+	#pragma region is_copy_constructible
+	/**
+	 * @brief checks if a type has a copy constructor
+	 * @brief 检查类型是否有复制构造函数
+	 * @brief 包含成员 value, 表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	struct is_copy_constructible: conditional<
+		is_referenceable<T>::value,
+		is_constructible<T, typename add_lvalue_reference<typename add_const<T>::type>::type>, 
+		false_type
+	>::type {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type has a copy constructor
+	 * @brief 检查类型是否有复制构造函数
+	 * @brief 该常量即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_copy_constructible_v = is_copy_constructible<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_copy_constructible
+
+	#pragma region is_trivially_copy_constructible
+	/**
+	 * @brief checks if a type has a trivial copy constructor
+	 * @brief 检查类型是否有平凡的复制构造函数
+	 * @brief 包含成员 value, 表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	struct is_trivially_copy_constructible: conditional<
+		is_referenceable<T>::value,
+		is_trivially_constructible<T, typename add_lvalue_reference<typename add_const<T>::type>::type>, 
+		false_type
+	>::type {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type has a trivial copy constructor
+	 * @brief 检查类型是否有平凡的复制构造函数
+	 * @brief 该常量即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_trivially_copy_constructible_v = is_trivially_copy_constructible<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_trivially_copy_constructible
+
+	#pragma region is_nothrow_copy_constructible
+	/**
+	 * @brief checks if a type has a nothrow copy constructor
+	 * @brief 检查类型是否有不抛出异常的复制构造函数
+	 * @brief 包含成员 value, 表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	struct is_nothrow_copy_constructible: conditional<
+		is_referenceable<T>::value,
+		is_nothrow_constructible<T, typename add_lvalue_reference<typename add_const<T>::type>::type>, 
+		false_type
+	>::type {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type has a nothrow copy constructor
+	 * @brief 检查类型是否有不抛出异常的复制构造函数
+	 * @brief 该常量即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_nothrow_copy_constructible_v = is_nothrow_copy_constructible<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_nothrow_copy_constructible
+
+	// checks if a type can be constructed from an rvalue reference
+	// 检查类型是否能从右值引用构造 
+	#pragma region is_move_constructible
+	/**
+	 * @brief checks if a type can be constructed from an rvalue reference
+	 * @brief 检查类型是否有移动构造函数
+	 * @brief 包含成员 value, 表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	struct is_move_constructible: conditional<
+		is_referenceable<T>::value,
+		is_constructible<T, typename add_rvalue_reference<T>::type>, 
+		false_type
+	>::type {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type can be constructed from an rvalue reference
+	 * @brief 检查类型是否有移动构造函数
+	 * @brief 该常量即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_move_constructible_v = is_move_constructible<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_move_constructible
+
+	#pragma region is_trivially_move_constructible
+	/**
+	 * @brief checks if a type can be trivially constructed from an rvalue reference
+	 * @brief 检查类型是否有平凡的移动构造函数
+	 * @brief 包含成员 value, 表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	struct is_trivially_move_constructible: conditional<
+		is_referenceable<T>::value,
+		is_trivially_constructible<T, typename add_rvalue_reference<T>::type>, 
+		false_type
+	>::type {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type can be trivially constructed from an rvalue reference
+	 * @brief 检查类型是否有平凡的移动构造函数
+	 * @brief 该常量即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_trivially_move_constructible_v = is_trivially_move_constructible<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_trivially_move_constructible
+
+	#pragma region is_nothrow_move_constructible
+	/**
+	 * @brief checks if a type can be nothrown constructed from an rvalue reference
+	 * @brief 检查类型是否有不抛出异常的移动构造函数
+	 * @brief 包含成员 value, 表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	struct is_nothrow_move_constructible: conditional<
+		is_referenceable<T>::value,
+		is_nothrow_constructible<T, typename add_rvalue_reference<T>::type>, 
+		false_type
+	>::type {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type can be nothrown constructed from an rvalue reference
+	 * @brief 检查类型是否有不抛出异常的移动构造函数
+	 * @brief 该常量即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_nothrow_move_constructible_v = is_nothrow_move_constructible<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_nothrow_move_constructible
+
+	#pragma endregion constructible series
+
 } // namespace __MY_NAMESPACE
 #endif // __HAS_CPP11
