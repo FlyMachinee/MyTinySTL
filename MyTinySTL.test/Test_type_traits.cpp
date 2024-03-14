@@ -829,4 +829,87 @@ namespace Test_type_traits {
 			static_assert(!my::is_nothrow_move_constructible<NoMove2>::value, "");
 		}
 	};
+
+	TEST_CLASS(Test_assignable) {
+	private:
+		struct Ex1 { int n; };
+	public:
+		TEST_METHOD(TestMethod) {
+			// 1 = 1; wouldn't compile
+			static_assert(!my::is_assignable<int, int>::value, "");
+
+			// int a; a = 1; works
+			static_assert(my::is_assignable<int&, int>::value, "");
+			static_assert(!my::is_assignable<int, double>::value, "");
+			static_assert(my::is_nothrow_assignable<int&, double>::value, "");
+			static_assert(my::is_assignable<std::string, double>::value, "");
+			static_assert(my::is_trivially_assignable<Ex1, const Ex1&>::value, "");
+		}
+	};
+
+	TEST_CLASS(Test_copy_assignable) {
+	private:
+		struct Foo { int n; };
+	public:
+		TEST_METHOD(TestMethod) {
+			static_assert(my::is_trivially_copy_assignable<Foo>::value, "");
+			static_assert(!my::is_trivially_copy_assignable<int[2]>::value, "");
+			static_assert(my::is_nothrow_copy_assignable<int>::value, "");
+		}
+	};
+
+	TEST_CLASS(Test_move_assignable) {
+	private:
+		struct Foo { int n; };
+
+		struct NoMove {
+			// 避免默认的移动赋值运算符的隐式定义
+			// 然而，该类仍然可移动赋值，因为
+			// 其复制赋值运算符能绑定到右值参数
+			NoMove& operator=(const NoMove&) { return *this; }
+		};
+	public:
+		TEST_METHOD(TestMethod) {
+			static_assert(my::is_nothrow_move_assignable<::std::string>::value, "");
+			static_assert(!my::is_move_assignable<int[2]>::value, "");
+			static_assert(my::is_trivially_move_assignable<Foo>::value, "");
+			static_assert(my::is_move_assignable<NoMove>::value, "");
+			static_assert(!my::is_nothrow_move_assignable<NoMove>::value, "");
+		}
+	};
+
+	TEST_CLASS(Test_destructible) {
+	private:
+		struct Foo {
+			std::string str;
+			~Foo() noexcept {};
+		};
+		struct Bar {
+			~Bar() = default;
+		};
+		struct A {
+			~A() noexcept(false) {}
+		};
+		struct B {
+			~B() = delete;
+		};
+	public:
+		static_assert(!my::is_destructible<void>::value, "");
+		static_assert(!my::is_destructible<int(int)>::value, "");
+		static_assert(!my::is_destructible<int[]>::value, "");
+		static_assert(my::is_destructible<int[5]>::value, "");
+
+		static_assert(my::is_destructible<::std::string>::value, "");
+		static_assert(my::is_destructible<Foo>::value, "");
+		static_assert(my::is_destructible<Bar>::value, "");
+		static_assert(!my::is_trivially_destructible<::std::string>::value, "");
+		static_assert(!my::is_trivially_destructible<Foo>::value, "");
+		static_assert(my::is_trivially_destructible<Bar>::value, "");
+		static_assert(my::is_nothrow_destructible<::std::string>::value, "");
+		static_assert(my::is_nothrow_destructible<Foo>::value, "");
+		static_assert(my::is_nothrow_destructible<Bar>::value, "");
+
+		static_assert(!my::is_nothrow_destructible<A>::value, "");
+		static_assert(!my::is_destructible<B>::value, "");
+	};
 }
