@@ -92,6 +92,11 @@ namespace __MY_NAMESPACE {
 	template <typename T>
 	struct is_member_pointer;
 
+	template <typename T>
+	struct is_swappable;	
+	template <typename T>
+	struct is_nothrow_swappable;
+
 	#pragma endregion forward_declarations
 
 
@@ -2204,6 +2209,7 @@ namespace __MY_NAMESPACE {
 	#endif // __HAS_CPP17
 	#pragma endregion is_nothrow_constructible
 
+
 	// checks if a type has a default constructor
 	// 检查类型是否有默认构造函数 
 	#pragma region is_default_constructible
@@ -2277,6 +2283,7 @@ namespace __MY_NAMESPACE {
 	inline constexpr bool is_nothrow_default_constructible_v = is_nothrow_default_constructible<T>::value;
 	#endif // __HAS_CPP17
 	#pragma endregion is_nothrow_default_constructible
+
 
 	// checks if a type has a copy constructor
 	// 检查类型是否拥有复制构造函数
@@ -2939,6 +2946,14 @@ namespace __MY_NAMESPACE {
 	auto __test_is_partial_swappable(...) -> false_type {};
 	__INNER_END
 
+	/**
+	 * @brief checks if objects of a type can be swapped with objects of different type
+	 * @brief 检查一个类型的对象是否能与不同类型的对象交换
+	 * @brief 包含成员 type，表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	 * @tparam U 需要检查的另一个类型
+	*/
 	template <typename T, typename U>
 	struct is_swappable_with: bool_constant<
 		conjunction_v<
@@ -2947,11 +2962,27 @@ namespace __MY_NAMESPACE {
 		>
 	> {};
 
+	/**
+	 * @brief checks if objects of a type can be swapped with objects of different type
+	 * @brief 检查一个类型的对象是否能与不同类型的对象交换
+	 * @brief 其本身即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	 * @tparam U 需要检查的另一个类型
+	*/
 	template <typename T, typename U>
 	inline constexpr bool is_swappable_with_v = is_swappable_with<T, U>::value;
 	#pragma endregion is_swappable_with
 
 	#pragma region is_nothrow_swappable_with
+	/**
+	 * @brief checks if objects of a type can be nothrown swapped with objects of different type
+	 * @brief 检查一个类型的对象是否能与不同类型的对象不抛出异常地交换
+	 * @brief 包含成员 type，表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	 * @tparam U 需要检查的另一个类型
+	*/
 	template <typename T, typename U>
 	struct is_nothrow_swappable_with: bool_constant<
 		is_swappable_with_v<T, U> &&
@@ -2959,11 +2990,26 @@ namespace __MY_NAMESPACE {
 		noexcept(swap(declval<T>(), declval<U>()))
 	> {};
 
+	/**
+	 * @brief checks if objects of a type can be nothrown swapped with objects of different type
+	 * @brief 检查一个类型的对象是否能与不同类型的对象不抛出异常地交换
+	 * @brief 其本身即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	 * @tparam U 需要检查的另一个类型
+	*/
 	template <typename T, typename U>
 	inline constexpr bool is_nothrow_swappable_with_v = is_nothrow_swappable_with<T, U>::value;
 	#pragma endregion is_nothrow_swappable_with
 
 	#pragma region is_swappable
+	/**
+	 * @brief checks if objects of a type can be swapped with objects of same type
+	 * @brief 检查一个类型的对象是否能与相同类型的对象交换
+	 * @brief 包含成员 type，表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
 	template <typename T>
 	struct is_swappable: conditional_t<
 		is_referenceable_v<T>,
@@ -2971,11 +3017,25 @@ namespace __MY_NAMESPACE {
 		false_type
 	> {};
 
+	/**
+	 * @brief checks if objects of a type can be swapped with objects of same type
+	 * @brief 检查一个类型的对象是否能与相同类型的对象交换
+	 * @brief 其本身即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
 	template <typename T>
 	inline constexpr bool is_swappable_v = is_swappable<T>::value;
 	#pragma endregion is_swappable
 
 	#pragma region is_nothrow_swappable
+	/**
+	 * @brief checks if objects of a type can be nothrown swapped with objects of same type
+	 * @brief 检查一个类型的对象是否能与相同类型的对象不抛出异常地交换
+	 * @brief 包含成员 type，表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
 	template <typename T>
 	struct isnothrow__swappable: conditional_t<
 		is_referenceable_v<T>,
@@ -2983,6 +3043,13 @@ namespace __MY_NAMESPACE {
 		false_type
 	> {};
 
+	/**
+	 * @brief checks if objects of a type can be nothrown swapped with objects of same type
+	 * @brief 检查一个类型的对象是否能与相同类型的对象不抛出异常地交换
+	 * @brief 其本身即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
 	template <typename T>
 	inline constexpr bool is_nothrow_swappable_v = is_nothrow_swappable<T>::value;
 	#pragma endregion is_nothrow_swappable
