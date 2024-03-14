@@ -2867,5 +2867,128 @@ namespace __MY_NAMESPACE {
 
 	#pragma endregion destructible series
 
+	// checks if a type has a virtual destructor
+	// 检查类型是否拥有虚析构函数
+	#pragma region has_virtual_destructor
+	/**
+	 * @brief checks if a type has a virtual destructor
+	 * @brief 检查类型是否拥有虚析构函数
+	 * @brief 包含成员 type，表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	struct has_virtual_destructor: integral_constant<bool, __has_virtual_destructor(T)> {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type has a virtual destructor
+	 * @brief 检查类型是否拥有虚析构函数
+	 * @brief 其本身即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	inline constexpr bool has_virtual_destructor_v = has_virtual_destructor<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion has_virtual_destructor
+
+	// checks if objects of a type can be swapped with objects of same or different type
+	// 检查一个类型的对象是否能与同类型或不同类型的对象交换
+	#if __HAS_CPP17
+	#pragma region swappable series
+
+	#pragma region swap declaration
+
+	#if __HAS_CPP17
+	// 此重载只有在 is_move_constructible_v<T> && is_move_assignable_v<T> 是 true 时才会参与重载决议。 (C++17 起)
+	template <typename T, typename = enable_if_t<is_move_constructible_v<T> && is_move_assignable_v<T>> >
+	#else // ^^^ __HAS_CPP17 / vvv !__HAS_CPP17
+	template <typename T>
+	#endif // __HAS_CPP17
+	__CONSTEXPR void swap(T&, T&) noexcept(
+		is_nothrow_move_constructible<T>::value && 
+		is_nothrow_move_assignable<T>::value
+	);
+
+	#if __HAS_CPP17
+	// 此重载只有在 is_swappable_v<T2> 是 true 时才会参与重载决议。 (C++17 起)
+	template <typename T2, ::size_t N, typename = enable_if_t<is_swappable<T2>::value> >
+	#else // ^^^ __HAS_CPP17 / vvv !__HAS_CPP17
+	template <typename T>
+	#endif // __HAS_CPP17
+	__CONSTEXPR void swap(T2(&a)[N], T2(&b)[N])
+		#if __HAS_CPP17
+		noexcept(is_nothrow_swappable<T2>::value);
+		#else // ^^^ __HAS_CPP17 / vvv !__HAS_CPP17 
+		noexcept(noexcept(swap(*a, *b)));
+		#endif // __HAS_CPP17
+
+	#pragma endregion swap declaration
+
+	#pragma region is_swappable_with
+
+	__INNER_BEGIN
+	template <typename T, typename U, 
+		typename = decltype(swap(declval<T>(), declval<U>())), 
+		typename = decltype(swap(declval<T>(), declval<U>()))
+	>
+	auto __test_is_partial_swappable(int) -> true_type {};
+
+	template <typename...>
+	auto __test_is_partial_swappable(...) -> false_type {};
+	__INNER_END
+
+	template <typename T, typename U>
+	struct is_swappable_with: bool_constant<
+		conjunction_v<
+			decltype(__INNER_NAMESPACE::__test_is_partial_swappable<T, U>(0)),
+			decltype(__INNER_NAMESPACE::__test_is_partial_swappable<U, T>(0))
+		>
+	> {};
+
+	template <typename T, typename U>
+	inline constexpr bool is_swappable_with_v = is_swappable_with<T, U>::value;
+	#pragma endregion is_swappable_with
+
+	#pragma region is_nothrow_swappable_with
+	template <typename T, typename U>
+	struct is_nothrow_swappable_with: bool_constant<
+		is_swappable_with_v<T, U> &&
+		noexcept(swap(declval<T>(), declval<U>())) &&
+		noexcept(swap(declval<T>(), declval<U>()))
+	> {};
+
+	template <typename T, typename U>
+	inline constexpr bool is_nothrow_swappable_with_v = is_nothrow_swappable_with<T, U>::value;
+	#pragma endregion is_nothrow_swappable_with
+
+	#pragma region is_swappable
+	template <typename T>
+	struct is_swappable: conditional_t<
+		is_referenceable_v<T>,
+		is_swappable_with<add_lvalue_reference_t<T>, add_lvalue_reference_t<T>>,
+		false_type
+	> {};
+
+	template <typename T>
+	inline constexpr bool is_swappable_v = is_swappable<T>::value;
+	#pragma endregion is_swappable
+
+	#pragma region is_nothrow_swappable
+	template <typename T>
+	struct isnothrow__swappable: conditional_t<
+		is_referenceable_v<T>,
+		is_nothrow_swappable_with<add_lvalue_reference_t<T>, add_lvalue_reference_t<T>>,
+		false_type
+	> {};
+
+	template <typename T>
+	inline constexpr bool is_nothrow_swappable_v = is_nothrow_swappable<T>::value;
+	#pragma endregion is_nothrow_swappable
+
+	#pragma endregion swappable series
+	#endif // __HAS_CPP17
+
 } // namespace __MY_NAMESPACE
 #endif // __HAS_CPP11
