@@ -2452,5 +2452,420 @@ namespace __MY_NAMESPACE {
 
 	#pragma endregion constructible series
 
+	#pragma region assignable series
+
+	// checks if a type has an assignment operator for a specific argument
+	// 检查类型是否拥有针对特定实参的赋值运算符
+	#pragma region is_assignable
+
+	__INNER_BEGIN
+	// 要求表达式 declval<T>() = declval<U>() 在不求值语境为良态
+	template <typename T, typename U, typename = decltype(declval<T>() = declval<U>())>
+	auto __try_assign(int) -> true_type {}
+
+	template <typename...>
+	auto __try_assign(...) -> false_type {}
+	__INNER_END
+
+	/**
+	 * @brief checks if a type has an assignment operator for a specific argument
+	 * @brief 检查类型是否拥有针对特定实参的赋值运算符
+	 * @brief 包含成员 type，表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	 * @tparam U 赋值运算符的实参类型
+	*/
+	template <typename T, typename U>
+	struct is_assignable: decltype(__INNER_NAMESPACE::__try_assign<T, U>(0)) {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type has an assignment operator for a specific argument
+	 * @brief 检查类型是否拥有针对特定实参的赋值运算符
+	 * @brief 其本身即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	 * @tparam U 赋值运算符的实参类型
+	*/
+	template <typename T, typename U>
+	inline constexpr bool is_assignable_v = is_assignable<T, U>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_assignable
+
+	#pragma region is_trivially_assignable
+	/**
+	 * @brief checks if a type has a trivial assignment operator for a specific argument
+	 * @brief 检查类型是否拥有平凡的针对特定实参的赋值运算符
+	 * @brief 包含成员 type，表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	 * @tparam U 赋值运算符的实参类型
+	*/
+	template <typename T, typename U>
+	struct is_trivially_assignable: integral_constant<bool, __is_trivially_assignable(T, U)> {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type has a trivial assignment operator for a specific argument
+	 * @brief 检查类型是否拥有平凡的针对特定实参的赋值运算符
+	 * @brief 其本身即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	 * @tparam U 赋值运算符的实参类型
+	*/
+	template <typename T, typename U>
+	inline constexpr bool is_trivially_assignable_v = is_trivially_assignable<T, U>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_trivially_assignable
+
+	#pragma region is_nothrow_assignable
+	/**
+	 * @brief checks if a type has a nothrow assignment operator for a specific argument
+	 * @brief 检查类型是否拥有不抛出异常的针对特定实参的赋值运算符
+	 * @brief 包含成员 type，表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	 * @tparam U 赋值运算符的实参类型
+	*/
+	template <typename T, typename U>
+	struct is_nothrow_assignable: integral_constant<
+		bool,
+		is_assignable<T, U>::value &&
+		noexcept(declval<T>() = declval<U>())
+	> {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type has a nothrow assignment operator for a specific argument
+	 * @brief 检查类型是否拥有不抛出异常的针对特定实参的赋值运算符
+	 * @brief 其本身即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	 * @tparam U 赋值运算符的实参类型
+	*/
+	template <typename T, typename U>
+	inline constexpr bool is_nothrow_assignable_v = is_nothrow_assignable<T, U>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_nothrow_assignable
+ 
+
+	// checks if a type has a copy assignment operator
+	// 检查类型是否拥有复制赋值运算符
+	#pragma region is_copy_assignable
+	/**
+	 * @brief checks if a type has a copy assignment operator
+	 * @brief 检查类型是否拥有复制赋值运算符
+	 * @brief 包含成员 value, 表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	struct is_copy_assignable: conditional<
+		is_referenceable<T>::value,
+		is_assignable<
+			typename add_lvalue_reference<T>::type,
+			typename add_lvalue_reference<typename add_const<T>::type>::type
+		>,
+		false_type
+	>::type {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type has a copy assignment operator
+	 * @brief 检查类型是否拥有复制赋值运算符
+	 * @brief 该常量即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_copy_assignable_v = is_copy_assignable<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_copy_assignable
+
+	#pragma region is_trivially_copy_assignable
+	/**
+	 * @brief checks if a type has a trivial copy assignment operator
+	 * @brief 检查类型是否拥有平凡的复制赋值运算符
+	 * @brief 包含成员 value, 表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	struct is_trivially_copy_assignable: conditional<
+		is_referenceable<T>::value,
+		is_trivially_assignable<
+			typename add_lvalue_reference<T>::type,
+			typename add_lvalue_reference<typename add_const<T>::type>::type
+		>,
+		false_type
+	>::type {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type has a trivial copy assignment operator
+	 * @brief 检查类型是否拥有平凡的复制赋值运算符
+	 * @brief 该常量即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_trivially_copy_assignable_v = is_trivially_copy_assignable<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_trivially_copy_assignable
+
+	#pragma region is_nothrow_copy_assignable
+	/**
+	 * @brief checks if a type has a nothrow copy constructor
+	 * @brief 检查类型是否有不抛出异常的复制构造函数
+	 * @brief 包含成员 value, 表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	struct is_nothrow_copy_assignable: conditional<
+		is_referenceable<T>::value,
+		is_nothrow_assignable<
+			typename add_lvalue_reference<T>::type,
+			typename add_lvalue_reference<typename add_const<T>::type>::type
+		>,
+		false_type
+	>::type {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type has a nothrow copy constructor
+	 * @brief 检查类型是否有不抛出异常的复制构造函数
+	 * @brief 该常量即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_nothrow_copy_assignable_v = is_nothrow_copy_assignable<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_nothrow_copy_assignable
+
+
+	// checks if a type can be constructed from an rvalue reference
+	// 检查类型是否能从右值引用构造 
+	#pragma region is_move_assignable
+	/**
+	 * @brief checks if a type can be constructed from an rvalue reference
+	 * @brief 检查类型是否有移动构造函数
+	 * @brief 包含成员 value, 表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	struct is_move_assignable: conditional<
+		is_referenceable<T>::value,
+		is_assignable<
+			typename add_lvalue_reference<T>::type, 
+			typename add_rvalue_reference<T>::type
+		>, 
+		false_type
+	>::type {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type can be constructed from an rvalue reference
+	 * @brief 检查类型是否有移动构造函数
+	 * @brief 该常量即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_move_assignable_v = is_move_assignable<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_move_assignable
+
+	#pragma region is_trivially_move_assignable
+	/**
+	 * @brief checks if a type can be trivially constructed from an rvalue reference
+	 * @brief 检查类型是否有平凡的移动构造函数
+	 * @brief 包含成员 value, 表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	struct is_trivially_move_assignable: conditional<
+		is_referenceable<T>::value,
+		is_trivially_assignable<
+			typename add_lvalue_reference<T>::type, 
+			typename add_rvalue_reference<T>::type
+		>, 
+		false_type
+	>::type {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type can be trivially constructed from an rvalue reference
+	 * @brief 检查类型是否有平凡的移动构造函数
+	 * @brief 该常量即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_trivially_move_assignable_v = is_trivially_move_assignable<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_trivially_move_assignable
+
+	#pragma region is_nothrow_move_assignable
+	/**
+	 * @brief checks if a type can be nothrown constructed from an rvalue reference
+	 * @brief 检查类型是否有不抛出异常的移动构造函数
+	 * @brief 包含成员 value, 表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	struct is_nothrow_move_assignable: conditional<
+		is_referenceable<T>::value,
+		is_nothrow_assignable<
+			typename add_lvalue_reference<T>::type, 
+			typename add_rvalue_reference<T>::type
+		>, 
+		false_type
+	>::type {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type can be nothrown constructed from an rvalue reference
+	 * @brief 检查类型是否有不抛出异常的移动构造函数
+	 * @brief 该常量即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_nothrow_move_assignable_v = is_nothrow_move_assignable<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_nothrow_move_assignable
+
+	#pragma endregion assignable series
+
+	#pragma region destructible series
+
+	// checks if a type has a non-deleted destructor
+	// 检查类型是否拥有未被弃置的析构函数
+	#pragma region is_destructible
+
+	__INNER_BEGIN
+	// 要求表达式 declval<U&>().~U() 在不求值语境合法
+	template <typename U, typename = decltype(declval<U&>().~U())>
+	auto __try_destruct(int) -> true_type {};
+	template <typename...>
+	auto __try_destruct(...) -> false_type {};
+
+	template <typename T>
+	struct __is_unknown_bound_array: false_type {};
+	template <typename T>
+	struct __is_unknown_bound_array<T[]>: true_type {};
+	__INNER_END
+
+	/**
+	 * @brief checks if a type has a non-deleted destructor
+	 * @brief 检查类型是否拥有未被弃置的析构函数
+	 * @brief 包含成员 type，表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	struct is_destructible: conditional<
+		// 如果 T 是引用类型
+		is_reference<T>::value,
+		// 则成员常量 value 等于 true
+		true_type,
+		typename conditional<
+			// 如果 T 是（可以有 cv 限定的） void、函数类型或未知边界数组
+			is_void<T>::value || 
+			is_function<T>::value || 
+			__INNER_NAMESPACE::__is_unknown_bound_array<T>::value,
+			// 则 value 等于 false
+			false_type,
+			typename conditional<
+				// 如果 T 是对象类型
+				is_object<T>::value, 
+				// 且对于作为 remove_all_extents<T>::type 的类型 U
+				// 表达式 declval<U&>().~U() 在不求值语境合法
+				// 则 value 等于 true
+				decltype(__INNER_NAMESPACE::__try_destruct<typename remove_all_extents<T>::type>(0)),
+				// 否则， value 等于 false
+				false_type
+			>::type
+		>::type
+	>::type {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type has a non-deleted destructor
+	 * @brief 检查类型是否拥有未被弃置的析构函数
+	 * @brief 其本身即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_destructible_v = is_destructible<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_destructible
+
+	#pragma region is_trivially_destructible
+	/**
+	 * @brief checks if a type has a trivial non-deleted destructor
+	 * @brief 检查类型是否拥有平凡的未被弃置的析构函数
+	 * @brief 包含成员 type，表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	struct is_trivially_destructible: integral_constant<bool, __is_trivially_destructible(T)> {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type has a trivial non-deleted destructor
+	 * @brief 检查类型是否拥有平凡的未被弃置的析构函数
+	 * @brief 其本身即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_trivially_destructible_v = is_trivially_destructible<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_trivially_destructible
+
+	#pragma region is_nothrow_destructible
+
+	__INNER_BEGIN
+	template <typename U>
+	struct __test_nothrow_destructible: integral_constant<bool, noexcept(declval<U&>().~U())> {};
+	__INNER_END
+
+	/**
+	 * @brief checks if a type has a nothrow non-deleted destructor
+	 * @brief 检查类型是否拥有不抛出异常的未被弃置的析构函数
+	 * @brief 包含成员 type，表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	struct is_nothrow_destructible: integral_constant<
+		bool,
+		is_destructible<T>::value &&
+		__INNER_NAMESPACE::__test_nothrow_destructible<typename remove_all_extents<T>::type>::value
+	> {};
+
+	#if __HAS_CPP17
+	/**
+	 * @brief checks if a type has a nothrow non-deleted destructor
+	 * @brief 检查类型是否拥有不抛出异常的未被弃置的析构函数
+	 * @brief 其本身即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_nothrow_destructible_v = is_nothrow_destructible<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_nothrow_destructible
+
+	#pragma endregion destructible series
+
 } // namespace __MY_NAMESPACE
 #endif // __HAS_CPP11
