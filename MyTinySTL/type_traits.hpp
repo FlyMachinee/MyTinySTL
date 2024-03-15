@@ -2026,7 +2026,7 @@ namespace __MY_NAMESPACE {
 	>::type {};
 
 	__INNER_BEGIN //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv 
-	template <typename, typename, typename, typename...>
+	template <typename...>
 	struct __get_multi_common_type { /* 其他所有情况下，无成员 type */ };
 
 	template <typename T1, typename T2, typename... R>
