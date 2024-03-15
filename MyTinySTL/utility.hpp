@@ -164,3 +164,5 @@ namespace __MY_NAMESPACE {
 	#pragma endregion swap
 
 } // namespace __MY_NAMESPACE
+
+#endif // __HAS_CPP11
