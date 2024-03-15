@@ -81,5 +81,32 @@ namespace __MY_NAMESPACE {
 	}
 	#pragma endregion move
 
+	#pragma region forward
+	/**
+	 * @brief forwards a function argument
+	 * @brief 转发一个函数实参，配合万能（转发）引用以实现完美转发
+	 * @brief 该重载转发左值为左值或右值
+	 * @tparam T 由万能引用 T&& 推导出的实参 T
+	 * @param t 要转发的对象
+	 * @return static_cast<T&&>(t)
+	*/
+	template <typename T>
+	__CONSTEXPR14 T&& forward(typename std::remove_reference<T>::type& t) noexcept {
+		return static_cast<T&&>(t);
+	}
+
+	/**
+	 * @brief forwards a function argument
+	 * @brief 转发一个函数实参，配合万能（转发）引用以实现完美转发
+	 * @brief 该重载转发右值为右值并禁止右值的转发为左值
+	 * @tparam T 由万能引用 T&& 推导出的实参 T
+	 * @param t 要转发的对象
+	 * @return static_cast<T&&>(t)
+	*/
+	template <typename T>
+	__CONSTEXPR14 T&& forward(typename std::remove_reference<T>::type&& t) noexcept {
+		return static_cast<T&&>(t);
+	}
+	#pragma endregion forward
 
 } // namespace __MY_NAMESPACE
