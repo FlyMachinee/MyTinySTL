@@ -2913,7 +2913,7 @@ namespace __MY_NAMESPACE {
 	#else // ^^^ __HAS_CPP17 / vvv !__HAS_CPP17
 	template <typename T>
 	#endif // __HAS_CPP17
-	__CONSTEXPR void swap(T&, T&) noexcept(
+	__CONSTEXPR20 void swap(T& left, T& right) noexcept(
 		is_nothrow_move_constructible<T>::value && 
 		is_nothrow_move_assignable<T>::value
 	);
@@ -2924,7 +2924,7 @@ namespace __MY_NAMESPACE {
 	#else // ^^^ __HAS_CPP17 / vvv !__HAS_CPP17
 	template <typename T>
 	#endif // __HAS_CPP17
-	__CONSTEXPR void swap(T2(&a)[N], T2(&b)[N])
+	__CONSTEXPR20 void swap(T(&left_arr)[N], T(&right_arr)[N])
 		#if __HAS_CPP17
 		noexcept(is_nothrow_swappable<T2>::value);
 		#else // ^^^ __HAS_CPP17 / vvv !__HAS_CPP17 
