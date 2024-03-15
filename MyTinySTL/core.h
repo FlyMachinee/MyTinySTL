@@ -45,4 +45,18 @@
 #define __NODISCARD
 #endif // __HAS_CPP17
 
+#if __HAS_CPP14
+#define __CONSTEXPR14 constexpr
+#else // ^^^ __HAS_CPP20 / vvv !__HAS_CPP20
+#define __CONSTEXPR14
+#endif // __HAS_CPP20
+
+#if __HAS_CPP20
+#define __CONSTEXPR20 constexpr
+#else // ^^^ __HAS_CPP20 / vvv !__HAS_CPP20
+#define __CONSTEXPR20
+#endif // __HAS_CPP20
+
+typedef unsigned long long size_t;
+
 #endif // ifndef __CORE_H__
