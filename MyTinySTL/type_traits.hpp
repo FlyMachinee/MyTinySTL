@@ -2037,7 +2037,7 @@ namespace __MY_NAMESPACE {
 		T1, T2, R...
 	> {
 		/* 则成员 type 指代 common_type<common_type<T1, T2>::type, R...>::type ，若存在这种类型 */
-		using type = common_type<typename common_type<T1, T2>::type, R...>::type;
+		using type = typename common_type<typename common_type<T1, T2>::type, R...>::type;
 	};
 	__INNER_END //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
