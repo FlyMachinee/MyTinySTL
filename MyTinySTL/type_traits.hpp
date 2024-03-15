@@ -3037,7 +3037,7 @@ namespace __MY_NAMESPACE {
 	 * @tparam T 需要检查的类型
 	*/
 	template <typename T>
-	struct isnothrow__swappable: conditional_t<
+	struct is_nothrow_swappable: conditional_t<
 		is_referenceable_v<T>,
 		is_nothrow_swappable_with<add_lvalue_reference_t<T>, add_lvalue_reference_t<T>>,
 		false_type
