@@ -109,4 +109,58 @@ namespace __MY_NAMESPACE {
 	}
 	#pragma endregion forward
 
+	#pragma region swap
+
+	#if __HAS_CPP17
+	// 此重载只有在 is_move_constructible_v<T> && is_move_assignable_v<T> 是 true 时才会参与重载决议。 (C++17 起)
+	template <typename T, typename/*  = enable_if_t<is_move_constructible_v<T> && is_move_assignable_v<T>> [in type_traits] */>
+	#else // ^^^ __HAS_CPP17 / vvv !__HAS_CPP17
+	template <typename T>
+	#endif // __HAS_CPP17
+	/**
+	 * @brief swaps the values of two objects
+	 * @brief 交换两个对象的值
+	 * @tparam T 交换对象的类型（可自动推导）
+	 * @param left 要交换的值
+	 * @param right 要交换的值
+	*/
+	__CONSTEXPR20 void swap(T& left, T& right) noexcept(
+		is_nothrow_move_constructible<T>::value&&
+		is_nothrow_move_assignable<T>::value
+	) {
+		T temp = move(left);
+		left = move(right);
+		right = move(temp);
+	}
+
+	#if __HAS_CPP17
+	// 此重载只有在 is_swappable_v<T2> 是 true 时才会参与重载决议。 (C++17 起)
+	template <typename T, ::size_t N, typename /* = enable_if_t<is_swappable<T>::value> [in type_traits] */>
+	#else // ^^^ __HAS_CPP17 / vvv !__HAS_CPP17
+	template <typename T, ::size_t N>
+	#endif // __HAS_CPP17
+	/**
+	 * @brief swaps the values of two arrays
+	 * @brief 交换两个等长内建数组的值
+	 * @tparam T 数组中存储对象的类型（可自动推导）
+	 * @tparam N 数组的长度（可自动推导）
+	 * @param left_arr 要交换的数组
+	 * @param right_arr 要交换的数组
+	*/
+	__CONSTEXPR20 void swap(T(&left_arr)[N], T(&right_arr)[N])
+		#if __HAS_CPP17
+		noexcept(is_nothrow_swappable<T>::value)
+		#else // ^^^ __HAS_CPP17 / vvv !__HAS_CPP17 
+		noexcept(noexcept(swap(*a, *b)))
+		#endif // __HAS_CPP17
+	{
+		T* l_ptr = left_arr;
+		T* l_end_ptr = l_ptr + N;
+		T* r_ptr = right_arr;
+		for (; l_ptr != l_end_ptr; ++l_ptr, ++r_ptr) {
+			swap(*l_ptr, *r_ptr);
+		}
+	}
+	#pragma endregion swap
+
 } // namespace __MY_NAMESPACE
