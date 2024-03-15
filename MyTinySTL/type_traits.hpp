@@ -2920,13 +2920,13 @@ namespace __MY_NAMESPACE {
 
 	#if __HAS_CPP17
 	// 此重载只有在 is_swappable_v<T2> 是 true 时才会参与重载决议。 (C++17 起)
-	template <typename T2, ::size_t N, typename = enable_if_t<is_swappable<T2>::value> >
+	template <typename T, ::size_t N, typename = enable_if_t<is_swappable<T>::value> >
 	#else // ^^^ __HAS_CPP17 / vvv !__HAS_CPP17
-	template <typename T>
+	template <typename T, ::size_t N>
 	#endif // __HAS_CPP17
 	__CONSTEXPR20 void swap(T(&left_arr)[N], T(&right_arr)[N])
 		#if __HAS_CPP17
-		noexcept(is_nothrow_swappable<T2>::value);
+		noexcept(is_nothrow_swappable<T>::value);
 		#else // ^^^ __HAS_CPP17 / vvv !__HAS_CPP17 
 		noexcept(noexcept(swap(*a, *b)));
 		#endif // __HAS_CPP17
