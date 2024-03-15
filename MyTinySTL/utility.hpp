@@ -163,6 +163,60 @@ namespace __MY_NAMESPACE {
 	}
 	#pragma endregion swap
 
+	#pragma region pair
+	template <typename T1, typename T2>
+	struct pair {
+		using first_type = T1;
+		using second_type = T2;
+
+		T1 first;
+		T2 second;
+
+		// https://zh.cppreference.com/w/cpp/utility/pair/pair
+
+		__CONSTEXPR11 pair();
+
+		__CONSTEXPR14 pair(const T1& first, const T2& second);
+
+		#if __HAS_CPP23
+		template <typename U1 = T1, typename U2 = T2>
+		#else // ^^^ __HAS_CPP23 / vvv !__HAS_CPP23
+		template <typename U1, typename U2>
+		#endif // __HAS_CPP23
+		__CONSTEXPR14 pair(U1&& first, U2&& second);
+
+		#if __HAS_CPP23
+		template <typename U1, typename U2>
+		constexpr pair(pair<U1, U2>& other_pair);
+		#endif // __HAS_CPP23
+
+		template <typename U1, typename U2>
+		__CONSTEXPR14 pair(const pair<U1, U2>& other_pair);
+
+		template <typename U1, typename U2>
+		__CONSTEXPR14 pair(pair<U1, U2>&& other_pair);
+
+		#if __HAS_CPP23
+		template <typename U1, typename U2>
+		constexpr pair(const pair<U1, U2>&& other_pair);
+		#endif // __HAS_CPP23
+
+		#if __HAS_CPP23
+		template <pair-like P>
+		constexpr pair(P&& other_pair);
+		#endif // __HAS_CPP23
+
+		template <typename... Args1, typename... Args2>
+		__CONSTEXPR20 pair(piecewise_construct_t, tuple<Args1...> first_args, tuple<Args2...> second_args);
+
+		pair(const pair& other_pair) = default;
+		pair(pair&& other_pair) = default;
+
+
+	};
+	#pragma endregion pair
+
+
 } // namespace __MY_NAMESPACE
 
 #endif // __HAS_CPP11
