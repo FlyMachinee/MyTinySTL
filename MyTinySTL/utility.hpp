@@ -67,6 +67,19 @@ namespace __MY_NAMESPACE {
 
 	} // namespace __MY_NAMESPACE::rel_ops
 	
+	#pragma region move
+	/**
+	 * @brief 用于指示对象 t 可以“被移动”，即允许从 t 到另一对象的有效率的资源传递
+	 * @brief 生成标识其参数 t 的亡值表达式，准确等价于到右值引用类型的 static_cast
+	 * @tparam T （无需填写）
+	 * @param t 要被移动的对象
+	 * @return static_cast<typename remove_reference<T>::type&&>(t)
+	*/
+	template <typename T>
+	__CONSTEXPR14 typename remove_reference<T>::type&& move(T&& t) noexcept {
+		return static_cast<typename remove_reference<T>::type&&>(t);
+	}
+	#pragma endregion move
 
 
 } // namespace __MY_NAMESPACE
