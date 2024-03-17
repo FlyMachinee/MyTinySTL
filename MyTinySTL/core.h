@@ -57,6 +57,26 @@
 #define __CONSTEXPR20
 #endif // __HAS_CPP20
 
+#if __HAS_CPP23
+#define __CONSTEXPR23 constexpr
+#else // ^^^ __HAS_CPP23 / vvv !__HAS_CPP23
+#define __CONSTEXPR23
+#endif // __HAS_CPP23
+
+#pragma endregion __CONSTEXPRXX
+
+#pragma region __INLINEXX
+
+#if __HAS_CPP17
+#define __INLINE17 inline
+#else // ^^^ __HAS_CPP17 / vvv !__HAS_CPP17
+#define __INLINE17
+
+#endif // __HAS_CPP17
+
+#pragma endregion __INLINEXX
+
+
 typedef unsigned long long size_t;
 
 #endif // ifndef __CORE_H__
