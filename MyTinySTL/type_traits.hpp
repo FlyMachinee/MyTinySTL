@@ -2284,6 +2284,33 @@ namespace __MY_NAMESPACE {
 	#endif // __HAS_CPP17
 	#pragma endregion is_nothrow_default_constructible
 
+	// (non-standard feature) checks if a type can be implicitly default constructed
+	// （非标准内容）检查类型是否能够被隐式默认构造
+	#pragma region is_implicitly_default_constructible
+
+	__INNER_BEGIN
+	template <typename T>
+	void __try_implicitly_default_construct(T) {};
+
+	template <typename T, typename = decltype(__try_implicitly_default_construct<T>({}))>
+	auto __is_implicitly_default_constructible(int) -> true_type {};
+
+	template <typename...>
+	auto __is_implicitly_default_constructible(...) -> false_type {};
+	__INNER_END
+
+	/**
+	 * @brief (non-standard feature) checks if a type can be implicitly default constructed
+	 * @brief （非标准内容）检查类型是否能够被隐式默认构造
+	 * @brief 包含成员 value, 表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	struct is_implicitly_default_constructible: integral_constant<
+		bool, 
+		decltype(__INNER_NAMESPACE::__is_implicitly_default_constructible<T>(0))
+	> {};
 
 	#if __HAS_CPP17
 	/**
