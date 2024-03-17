@@ -2285,6 +2285,20 @@ namespace __MY_NAMESPACE {
 	#pragma endregion is_nothrow_default_constructible
 
 
+	#if __HAS_CPP17
+	/**
+	 * @brief (non-standard feature) checks if a type can be implicitly default constructed
+	 * @brief （非标准内容）检查类型是否能够被隐式默认构造
+	 * @brief 该常量即表示检查的结果
+	 * 
+	 * @tparam T 需要检查的类型
+	*/
+	template <typename T>
+	inline constexpr bool is_implicitly_default_constructible_v = is_implicitly_default_constructible<T>::value;
+	#endif // __HAS_CPP17
+	#pragma endregion is_implicitly_default_constructible
+
+
 	// checks if a type has a copy constructor
 	// 检查类型是否拥有复制构造函数
 	#pragma region is_copy_constructible
