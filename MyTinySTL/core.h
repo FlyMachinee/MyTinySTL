@@ -7,6 +7,8 @@
 #define __INNER_BEGIN namespace __INNER_NAMESPACE {
 #define __INNER_END }
 
+#pragma region __HAS_CPPXX
+
 #ifndef __HAS_CPP11
 #if __cplusplus >= 201103L
 #define __HAS_CPP11 1
@@ -38,6 +40,10 @@
 #define __HAS_CPP20 0
 #endif
 #endif // __HAS_CPP20
+
+#define __HAS_CPP23 0
+
+#pragma endregion __HAS_CPPXX
 
 #if __HAS_CPP17
 #define __NODISCARD [[nodiscard]]
