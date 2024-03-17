@@ -51,6 +51,15 @@
 #define __NODISCARD
 #endif // __HAS_CPP17
 
+#pragma region __CONSTEXPRXX
+
+#if __HAS_CPP11
+#define __CONSTEXPR11
+#else // ^^^ __HAS_CPP11 / vvv !__HAS_CPP11
+#define __CONSTEXPR11
+#endif // __HAS_CPP11
+
+
 #if __HAS_CPP14
 #define __CONSTEXPR14 constexpr
 #else // ^^^ __HAS_CPP20 / vvv !__HAS_CPP20
